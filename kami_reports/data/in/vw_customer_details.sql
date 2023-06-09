@@ -1,6 +1,4 @@
-USE db_uc_kami;
-CREATE OR REPLACE VIEW vw_customer_details AS SELECT DISTINC
- IFNULL(CONVERT(cliente.cod_cliente, CHAR), '0') AS cod_cliente
+CREATE OR REPLACE VIEW vw_customer_details AS SELECT DISTINCTROW IFNULL(CONVERT(cliente.cod_cliente, CHAR), '0') AS cod_cliente
 ,IFNULL(CONVERT(cliente.nome_cliente, CHAR), '0') AS nome_cliente
 ,IFNULL(CONVERT(cliente.razao_social, CHAR), '0') AS razao_social
 ,IFNULL(CONVERT(ramo_atividade.desc_abrev, CHAR), '0') AS ramo_atividade
@@ -21,4 +19,5 @@ LEFT JOIN cd_cliente_endereco AS cliente_endereco ON (cliente_endereco.cod_clien
 LEFT JOIN cd_cliente_atividade AS cliente_atividade  ON (cliente_atividade.cod_cliente = cliente.cod_cliente)
 LEFT JOIN cd_ramo_atividade AS ramo_atividade  ON (cliente_atividade.cod_ramo_atividade = ramo_atividade.cod_ramo_atividade)
 LEFT JOIN vd_pedido AS pedido ON (pedido.cod_cliente = cliente.cod_cliente)
-WHERE pedido.cod_empresa IN (1,2,3,4,5,6,9,10,11);
+WHERE pedido.cod_empresa IN (1,2,3,4,5,6,9,10,11)
+GROUP BY cod_cliente;
