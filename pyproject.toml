@@ -2,12 +2,29 @@
 name = "kami-reports"
 version = "0.1.0"
 description = ""
-authors = ["Your Name <you@example.com>"]
+authors = ["Maicon de Menezes <maicon@kamico.com.br>"]
 readme = "README.md"
 packages = [{include = "kami_reports"}]
 
 [tool.poetry.dependencies]
 python = "^3.10"
+python-dotenv = "^1.0.0"
+kami-logging = "^0.2.1"
+kami-messenger = "^0.2.0"
+kami-gdrive = "^0.1.3"
+pandas = "^2.0.2"
+openpyxl = "^3.1.2"
+xlsxwriter = "^3.1.2"
+jinja2 = "^3.1.2"
+dash = "^2.10.2"
+plotly = "^5.15.0"
+dash-bootstrap-components = "^1.4.1"
+dash-bootstrap-templates = "^1.0.8"
+pymysql = "^1.0.3"
+sqlalchemy = "^2.0.15"
+asyncmy = "^0.2.8"
+dash-labs = "^1.2.0"
+numerize = "^0.12"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -16,6 +33,10 @@ pytest-cov = "^4.1.0"
 blue = "^0.9.1"
 isort = "^5.12.0"
 taskipy = "^1.11.0"
+ipython = "^8.14.0"
+ipykernel = "^6.23.1"
+notebook = "^6.5.4"
+nbformat = "^5.9.0"
 
 
 [tool.poetry.group.doc.dependencies]
