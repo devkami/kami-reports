@@ -199,9 +199,9 @@ def deliver_comercial_reports(current_folders_id):
         source='data/out',
         destiny=current_folders_id['board'],
     )
-    """ send_messages_by_group(
+    send_messages_by_group(
         gdrive_folder_id=current_folders_id['board'], group='comercial'
-    ) """
+    )
 
 
 @benchmark_with(report_bot_logger)
@@ -221,9 +221,9 @@ def deliver_account_reports(current_folders_id):
         source='data/out',
         destiny=current_folders_id['account'],
     )
-    """ send_messages_by_group(
+    send_messages_by_group(
         gdrive_folder_id=current_folders_id['account'], group='account'
-    ) """
+    ) 
 
 
 @benchmark_with(report_bot_logger)
