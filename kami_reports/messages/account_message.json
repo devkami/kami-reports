@@ -1,0 +1,14 @@
+{
+  "whatsapp" : {
+    "sender":"",
+    "recipients": ["{{ contact_phone }}"],
+    "subject": "Relatórios Financeiros Diários",
+    "body":"Olá, {{ contact_name }} \nOs Relatórios Financeiros de hoje já estão disponíveis na pasta:\nhttps://drive.google.com/drive/u/1/folders/{{ report_id_folder }}"
+  },
+  "email":{
+    "sender":"",
+    "recipients": ["{{ contact_email }}"],
+    "subject": "Relatórios Financeiros Diários",
+    "body":"<h2>Olá, {{ contact_name }}</h2></br><p>Os Relatórios Financeiros de hoje já estão disponíveis na pasta:</p></br><p><i>https://drive.google.com/drive/u/1/folders/{{ report_id_folder }}</i></p>"
+  }
+}

@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from kami_logging import benchmark_with, logging_with
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
-from constants import starting_year
+from constant import starting_year
 
 db_connector_logger = logging.getLogger('database')
 load_dotenv()

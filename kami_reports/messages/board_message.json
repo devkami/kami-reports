@@ -1,0 +1,14 @@
+{
+  "whatsapp" : {
+    "sender":"",
+    "recipients": ["{{ contact_phone }}"],
+    "subject": "Relatórios de Fechamento do Mês",
+    "body":"Olá, {{ contact_name }} \nOs Relatórios Fechamento do Mês Por Marcas já estão disponíveis na pasta:\nhttps://drive.google.com/drive/u/1/folders/{{ report_id_folder }}"
+  },
+  "email":{
+    "sender":"",
+    "recipients": ["{{ contact_email }}"],
+    "subject": "Relatórios de Fechamento do Mês",
+    "body":"<h2>Olá, {{ contact_name }}</h2></br><p>Os Relatórios Fechamento do Mês Por Marcas já estão disponíveis na pasta:</p></br><p><i>https://drive.google.com/drive/u/1/folders/{{ report_id_folder }}</i></p>"
+  }
+}
