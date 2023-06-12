@@ -245,7 +245,7 @@ def main():
     report_bot_logger.info('Start Execution.')
     current_folders_id = create_gdrive_folders()
 
-    if not is_comercial_weekday():
+    if is_comercial_weekday():
         deliver_comercial_reports(current_folders_id)
         deliver_account_reports(current_folders_id)
 

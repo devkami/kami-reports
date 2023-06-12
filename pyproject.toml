@@ -22,7 +22,6 @@ dash-bootstrap-components = "^1.4.1"
 dash-bootstrap-templates = "^1.0.8"
 pymysql = "^1.0.3"
 sqlalchemy = "^2.0.15"
-asyncmy = "^0.2.8"
 dash-labs = "^1.2.0"
 numerize = "^0.12"
 
