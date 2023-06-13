@@ -85,10 +85,10 @@ columns_names_head = [
     'dias_atraso',
     'valor_devido',
     'dt_primeira_compra',
-    'dt_ultima_compra',
-    'dias_sem_compra',
+    'dt_ultima_compra',    
     'cod_marca',
     'desc_marca',
+    'STATUS'
 ]
 sale_nops = [
     '6.102',
@@ -107,3 +107,56 @@ subsidized_nops = [
     'CAMPANHA',
 ]
 trousseau_nops = ['ENXOVAL']
+trans_cols = {
+    'company': 'Empresa',
+    'branch': 'Canal de Vendas',
+    'uf': 'Estado',
+    'salesperson': 'Vendedores',
+}
+companies = {
+    1: 'KAMI CO',
+    2: 'NEW HAUSS',
+    3: 'MOVEMENT SP',
+    4: 'ENERGY',
+    5: 'HAIRPRO',
+    6: 'SOUTH',
+    9: 'MMS',
+    10: '3MKO MATRIZ',
+    11: '3MKO FILIAL SP',
+    12: '3MKO FILIAL ES',
+    13: 'MOVEMENT RJ',
+    14: '3MKO FILIAL PR',
+    15: 'MOVEMENT MT',
+    16: 'MOVEMENT RS',
+}
+template_cols = [
+    'ano',
+    'mes',
+    'cod_cliente',
+    'nome_cliente',
+    'ramo_atividade',
+    'bairro',
+    'cidade',
+    'uf',
+    'cod_colaborador',
+    'nome_colaborador',
+    'cod_situacao',
+    'desc_situacao',
+    'cod_grupo_produto',
+    'desc_grupo_produto',
+    'cod_grupo_pai',
+    'desc_grupo_pai',
+    'cod_marca',
+    'desc_marca',
+    'empresa_nota_fiscal',
+]
+filter_cols = [
+    'Ano',
+    'Mês',
+    'Empresa',
+    'Marca',
+    'Vendedores',
+    'Canal de Vendas',
+    'Estado',
+    'Situação',
+]

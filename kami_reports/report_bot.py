@@ -23,12 +23,11 @@ from messages import send_messages_by_group
 from dataframe import (
     clean_master_df,
     calculate_master_kpis,
-    build_master_df,
-)
-from database import (
-    get_vw_customer_details,
-    get_vw_daily_billings,
-    get_vw_monthly_billings,
+    build_master_df,    
+    get_sales_lines_df,
+    get_sales_bi_df,
+    get_customer_details_df,
+    get_monthly_billings_df
 )
 
 report_bot_logger = logging.getLogger('report_bot')
@@ -113,15 +112,16 @@ def calculate_overdue_kpi(customer_df):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_master_report(master_df, filename):
-    if not master_df.empty:
-        master_df = clean_master_df(master_df)
-        master_kpi_df = calculate_master_kpis(master_df)        
-        master_kpi_df.to_excel(
+def generate_master_report(filename):    
+    master_df = build_master_df()
+    if not master_df.empty:        
+        master_df.to_excel(
             f'data/out/mestre_{filename}.xlsx',
             sheet_name='MESTRE',
             index=False,
         )
+        return True
+    return False
 
 
 @benchmark_with(report_bot_logger)
@@ -137,7 +137,8 @@ def generate_montlhy_report(montlhy_df, filename):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_products_report(products_df, filename):
+def generate_products_report(filename):
+    products_df = get_sales_lines_df()
     products_df.to_excel(
         f'data/out/produtos_{filename}.xlsx',
         sheet_name='PRODUTOS',
@@ -147,11 +148,10 @@ def generate_products_report(products_df, filename):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_comercial_report(products_df, filename):
-    delete_old_files('data/out')
-    generate_products_report(products_df, filename)
-    master_df = build_master_df(products_df)
-    generate_master_report(master_df, filename)
+def generate_comercial_report(filename):
+    delete_old_files('data/out')    
+    generate_products_report(filename)   
+    generate_master_report(filename)
 
 
 @benchmark_with(report_bot_logger)
@@ -183,28 +183,21 @@ def is_comercial_weekday():
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_comercial_reports(current_folders_id):
-    customer_df = get_vw_customer_details()
-    products_df = get_vw_daily_billings()
-    base_df = products_df.merge(
-        customer_df[customer_df.columns[:-1]],
-        left_on=['cod_cliente'],
-        right_on=['cod_cliente'],
-        how='left',
-    )
-    generate_comercial_report(base_df, 'geral')
+def deliver_comercial_reports(current_folders_id):          
+    generate_comercial_report('geral')
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['board'],
     )
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['board'], group='comercial'
+        gdrive_folder_id=current_folders_id['board'], group='test'
     )
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_account_report(customer_df, filename):
+def generate_account_report(filename):
+    customer_df = get_customer_details_df()
     generate_overdue_report(
         customer_df, filename
     )
@@ -212,9 +205,8 @@ def generate_account_report(customer_df, filename):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_account_reports(current_folders_id):
-    customer_df = get_vw_customer_details()
-    generate_account_report(customer_df, 'geral')
+def deliver_account_reports(current_folders_id):    
+    generate_account_report('geral')
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['account'],
@@ -227,7 +219,7 @@ def deliver_account_reports(current_folders_id):
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_monthly_reports(current_folders_id):
-    montlhy_df = get_vw_monthly_billings()
+    montlhy_df = get_monthly_billings_df()
     generate_montlhy_report(montlhy_df, 'geral')
     upload_files_to(
         source='data/out',
@@ -254,7 +246,9 @@ def main():
 
 def test():
     current_folders_id = create_gdrive_folders()
+    deliver_comercial_reports(current_folders_id)
     deliver_account_reports(current_folders_id)
+    deliver_monthly_reports(current_folders_id)    
 
 if __name__ == '__main__':
     main()

@@ -1,5 +1,6 @@
 import logging
 import pandas as pd
+from typing import List, Dict
 from constant import (
     columns_names_head,
     sale_nops,
@@ -10,13 +11,36 @@ from constant import (
     current_year,
     tags,
     current_month,
+    trans_cols,
+    template_cols,
+    companies,
+    months_ptbr
 )
 from datetime import datetime as dt, timedelta as td
 from numpy import dtype
 from kami_logging import benchmark_with, logging_with
+from database import get_vw_customer_details, get_vw_daily_billings, get_vw_monthly_billings
 
 dataframe = logging.getLogger('dataframe')
 
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_sales_lines_df():
+    sales_lines_df = get_vw_daily_billings()
+    return sales_lines_df
+
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_customer_details_df():
+    customer_details = get_vw_customer_details()
+    return customer_details
+
+
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_monthly_billings_df():
+    monthly_billings = get_vw_monthly_billings()
+    return monthly_billings
 
 def group_by_orders(df, order_cols) -> pd.DataFrame:
     df = df.sort_values(['ano', 'mes'], ascending=False)
@@ -42,7 +66,7 @@ def convert_number_cols(df):
         'cod_grupo_pai',
         'cod_marca',
     ]
-    int_cols = ['dias_atraso', 'qtd', 'dias_sem_compra']
+    int_cols = ['dias_atraso', 'qtd']
     float_cols = [
         'valor_devido',
         'custo_total',
@@ -106,7 +130,7 @@ def clean_orders_df(orders_df) -> pd.DataFrame:
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def build_orders_df(df):
-    return group_by_orders(convert_number_cols(df), order_cols=['cod_pedido'])
+    return group_by_orders(df, order_cols=['cod_pedido'])
 
 
 def filter_orders_by_nops(orders_df, nops) -> pd.DataFrame:
@@ -228,10 +252,11 @@ def sum_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def build_master_df(df) -> pd.DataFrame:
+def build_master_df() -> pd.DataFrame:
     master_df = pd.DataFrame()
-    orders_df = build_orders_df(df)
-    head_df = group_by_orders(df, order_cols=['cod_cliente', 'cod_marca'])[
+    sales_bi_df = get_sales_bi_df()
+    orders_df = build_orders_df(sales_bi_df)
+    head_df = group_by_orders(sales_bi_df, order_cols=['cod_cliente', 'cod_marca'])[
         columns_names_head
     ]
     index_cols = ['cod_cliente', 'cod_marca']
@@ -244,14 +269,14 @@ def build_master_df(df) -> pd.DataFrame:
     end_date = f'{dt.now().year}-{dt.now().month - 1}'
 
     net_df['qtd_total_compras'] = count_sales_by_costumer_and_period(
-        df,
+        sales_bi_df,
         start_date=starting_year,
         end_date=dt.now().strftime('%Y-%m'),
         freq='M',
     )
     start_date = dt.now() - td(days=180)
     net_df['qtd_compras_semestre'] = count_sales_by_costumer_and_period(
-        df,
+        sales_bi_df,
         start_date=start_date.strftime('%Y-%m'),
         end_date=end_date,
         freq='M',
@@ -290,9 +315,11 @@ def build_master_df(df) -> pd.DataFrame:
         master_kpis_df = pd.concat(dfs, ignore_index=False, axis=1)
         master_df = head_df.merge(
             master_kpis_df.reset_index(), on=index_cols, how='outer'
-        )
+        )        
+        master_df = clean_master_df(master_df)
+        master_kpi_df = calculate_master_kpis(master_df)        
 
-    return master_df
+    return master_kpi_df
 
 
 def get_tagged_columns():
@@ -425,3 +452,179 @@ def calculate_master_kpis(master_df):
     year_to_date_df = calculate_year_to_date(past_years_df)
 
     return year_to_date_df
+
+
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_sales_bi_df():
+    sales_bi_df  = pd.DataFrame()
+    customer_df = get_customer_details_df()
+    sales_lines_df = get_sales_lines_df()  
+    sales_bi_df = sales_lines_df.merge(
+        customer_df,
+        left_on=['cod_cliente'],
+        right_on=['cod_cliente'],
+        how='left',
+    )
+    sales_bi_df = convert_number_cols(sales_bi_df)
+    return sales_bi_df
+
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_sales_orders_df(sales_bi_df):
+    sales_orders_df = build_orders_df(sales_bi_df)
+    return sales_orders_df
+
+
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_template_df(df) -> pd.DataFrame:
+    return df[template_cols]
+
+
+def get_opt_list_from_cols(
+    df_template, value_col, label_col, label_sort=True
+) -> List[Dict]:
+    sort_col = label_col if label_sort else value_col
+    option_list = [{'value': 0, 'label': 'Todos'}]
+    df_opt = (
+        df_template[[label_col, value_col]]
+        .drop_duplicates(subset=[value_col])
+        .dropna()
+        .sort_values(by=[sort_col])
+    )
+    opt_list = list(zip(*map(df_opt.get, df_opt)))
+    option_list.extend(
+        [{'value': value, 'label': label} for label, value in opt_list]
+    )
+
+    return option_list
+
+
+def get_opt_list_from_col(df_template, col) -> List[Dict]:
+    option_list = [{'value': 0, 'label': 'Todos'}]
+    opt_list = (
+        df_template[[col]]
+        .drop_duplicates(subset=[col])
+        .sort_values(by=[col])[col]
+        .dropna()
+        .unique()
+    )
+    option_list.extend([{'value': opt, 'label': opt} for opt in opt_list])
+
+    return option_list
+
+
+def get_month_opt_list(df_template) -> List[Dict]:
+    df_template['mes_abbr'] = df_template['mes'].apply(
+        lambda x: months_ptbr[x]
+    )
+    months_list = get_opt_list_from_cols(
+        df_template, value_col='mes', label_col='mes_abbr', label_sort=False
+    )
+    return months_list
+
+
+def get_year_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_col(df_template, 'ano')
+
+
+def get_value_by_id(dict_list, key):
+    for item in dict_list:
+        if item['value'] == key:
+            return item['label']
+    return None
+
+
+def get_salesperson_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_cols(
+        df_template, value_col='cod_colaborador', label_col='nome_colaborador'
+    )
+
+
+def get_branch_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_col(df_template, 'ramo_atividade')
+
+
+def get_uf_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_col(df_template, 'uf')
+
+
+def get_city_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_col(df_template, 'cidade')
+
+
+def get_district_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_col(df_template, 'bairro')
+
+
+def get_status_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_cols(
+        df_template, value_col='cod_situacao', label_col='desc_situacao'
+    )
+
+
+def get_sub_prod_group_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_cols(
+        df_template,
+        value_col='cod_grupo_produto',
+        label_col='desc_grupo_produto',
+    )
+
+
+def get_prod_group_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_cols(
+        df_template, value_col='cod_grupo_pai', label_col='desc_grupo_pai'
+    )
+
+
+def get_prod_band_opt_list(df_template) -> List[Dict]:
+    return get_opt_list_from_cols(
+        df_template, value_col='cod_marca', label_col='desc_marca'
+    )
+
+
+def get_company_opt_list(df_template) -> List[Dict]:
+    df_template['nome_empresa'] = (
+        df_template.loc[df_template['empresa_nota_fiscal'] > 0][
+            'empresa_nota_fiscal'
+        ]
+        .dropna()
+        .apply(lambda x: companies[x])
+    )
+    return get_opt_list_from_cols(
+        df_template,
+        value_col='empresa_nota_fiscal',
+        label_col='nome_empresa',
+        label_sort=False,
+    )
+
+
+def get_key_from_value(dictionary, value):
+    keys = [key for key, val in dictionary.items() if val == value]
+    if keys:
+        return keys[0]
+    return None
+
+def get_opt_lists_from_df(df, cols) -> Dict:
+    opt_lists = {}
+    df_template = get_template_df(df)
+    all_lists = {
+        'month': get_month_opt_list(df_template),
+        'year': get_year_opt_list(df_template),
+        'salesperson': get_salesperson_opt_list(df_template),
+        'branch': get_branch_opt_list(df_template),
+        'uf': get_uf_opt_list(df_template),
+        'city': get_city_opt_list(df_template),
+        'district': get_district_opt_list(df_template),
+        'status': get_status_opt_list(df_template),
+        'sub_prod_group': get_sub_prod_group_opt_list(df_template),
+        'prod_group': get_prod_group_opt_list(df_template),
+        'prod_band': get_prod_band_opt_list(df_template),
+        'company': get_company_opt_list(df_template),
+    }
+    for col in cols:
+        en_col = get_key_from_value(trans_cols, col)
+        if en_col:
+            opt_lists[en_col] = all_lists[en_col]
+    return opt_lists
