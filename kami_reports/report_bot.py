@@ -23,7 +23,6 @@ from messages import send_messages_by_group
 from dataframe import (
     clean_master_df,
     calculate_master_kpis,
-    calculate_seller_kpis,
     build_master_df,
 )
 from database import (
@@ -117,9 +116,8 @@ def calculate_overdue_kpi(customer_df):
 def generate_master_report(master_df, filename):
     if not master_df.empty:
         master_df = clean_master_df(master_df)
-        master_kpi_df = calculate_master_kpis(master_df)
-        sellers_kpi_df = calculate_seller_kpis(master_kpi_df)
-        sellers_kpi_df.to_excel(
+        master_kpi_df = calculate_master_kpis(master_df)        
+        master_kpi_df.to_excel(
             f'data/out/mestre_{filename}.xlsx',
             sheet_name='MESTRE',
             index=False,

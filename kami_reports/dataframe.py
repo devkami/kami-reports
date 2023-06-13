@@ -425,21 +425,3 @@ def calculate_master_kpis(master_df):
     year_to_date_df = calculate_year_to_date(past_years_df)
 
     return year_to_date_df
-
-
-@benchmark_with(dataframe)
-@logging_with(dataframe)
-def calculate_seller_kpis(master_df):
-    def get_status(x):
-        if x > 180:
-            return 'PERDIDO'
-        elif x > 90:
-            return 'INATIVO'
-        elif x > 60:
-            return 'PRE-INATIVO'
-        else:
-            return 'ATIVO'
-
-    master_df['STATUS'] = master_df['dias_sem_compra'].apply(get_status)
-
-    return master_df
