@@ -2,7 +2,9 @@
 
 from datetime import datetime, timedelta
 
-months_ptbr = {
+import numpy as np
+
+MONTHS_PTBR = {
     1: 'Janeiro',
     2: 'Fevereiro',
     3: 'Março',
@@ -16,8 +18,7 @@ months_ptbr = {
     11: 'Novembro',
     12: 'Dezembro',
 }
-
-months_ptbr_abbr = {
+MONTHS_PTBR_ABBR = {
     1: 'JAN',
     2: 'FEV',
     3: 'MAR',
@@ -31,18 +32,7 @@ months_ptbr_abbr = {
     11: 'NOV',
     12: 'DEZ',
 }
-
-weekdays_ptbr = {
-    0: 'Segunda',
-    1: 'Terça',
-    2: 'Quarta',
-    3: 'Quinta',
-    4: 'Sexta',
-    5: 'Sábado',
-    6: 'Domingo',
-}
-
-weekdays_ptbr_abbr = {
+WEEKDAYS_PTBR_ABBR = {
     0: 'SEG',
     1: 'TER',
     2: 'QUA',
@@ -51,24 +41,19 @@ weekdays_ptbr_abbr = {
     5: 'SAB',
     6: 'DOM',
 }
-
-industry_areas = ['SITE', 'SALAO', 'PERFUMARIA']
-
-tags = ['_liquido', '_bruto', '_desconto', '_bonificado', '_enxoval']
-starting_year = 2022
-scope = 'https://www.googleapis.com/auth/drive'
-key_file_location = 'service_account_credentials.json'
-current_month = datetime.now().month
-current_year = datetime.now().year
-current_day = datetime.now().day
-end_week = datetime.now() - timedelta(days=datetime.today().weekday())
-start_week = end_week - timedelta(days=7)
-current_weekday = datetime.today().weekday()
-week_year_number = datetime.now().strftime('%V')
-current_week_folder = f'Semana-{week_year_number} ({start_week.day}-{start_week.month} a {end_week.day}-{end_week.month})'
-current_day_folder = f'{current_day}-{weekdays_ptbr_abbr[current_weekday]}'
-comercial_week = [0, 1, 2, 3, 4]
-columns_names_head = [
+TAGS = ['_liquido', '_bruto', '_desconto', '_bonificado', '_enxoval']
+STARTING_YEAR = 2022
+CURRENT_MONTH = datetime.now().month
+CURRENT_YEAR = datetime.now().year
+CURRENT_DAY = datetime.now().day
+END_WEEK = datetime.now() - timedelta(days=datetime.today().weekday())
+START_WEEK = END_WEEK - timedelta(days=7)
+CURRENT_WEEKDAY = datetime.today().weekday()
+WEEK_YEAR_NUMBER = datetime.now().strftime('%V')
+CURRENT_WEEK_FOLDER = f'Semana-{WEEK_YEAR_NUMBER} ({START_WEEK.day}-{START_WEEK.month} a {END_WEEK.day}-{END_WEEK.month})'
+CURRENT_DAY_FOLDER = f'{CURRENT_DAY}-{WEEKDAYS_PTBR_ABBR[CURRENT_WEEKDAY]}'
+COMERCIAL_WEEK = [0, 1, 2, 3, 4]
+COLUMNS_NAMES_HEAD = [
     'cod_colaborador',
     'nome_colaborador',
     'cod_cliente',
@@ -85,12 +70,12 @@ columns_names_head = [
     'dias_atraso',
     'valor_devido',
     'dt_primeira_compra',
-    'dt_ultima_compra',    
+    'dt_ultima_compra',
     'cod_marca',
     'desc_marca',
-    'STATUS'
+    'STATUS',
 ]
-sale_nops = [
+SALE_NOPS = [
     '6.102',
     '6.404',
     'BLACKFRIDAY',
@@ -98,7 +83,7 @@ sale_nops = [
     'VENDA_S_ESTOQUE',
     'WORKSHOP',
 ]
-subsidized_nops = [
+SUBSIDIZED_NOPS = [
     'BONIFICADO',
     'BONIFICADO_F',
     'BONI_COMPRA',
@@ -106,14 +91,14 @@ subsidized_nops = [
     'PROMO_BLACK',
     'CAMPANHA',
 ]
-trousseau_nops = ['ENXOVAL']
-trans_cols = {
+TROUSSEAU_NOPS = ['ENXOVAL']
+TRANS_COLS = {
     'company': 'Empresa',
     'branch': 'Canal de Vendas',
     'uf': 'Estado',
     'salesperson': 'Vendedores',
 }
-companies = {
+COMPANIES = {
     1: 'KAMI CO',
     2: 'NEW HAUSS',
     3: 'MOVEMENT SP',
@@ -129,7 +114,7 @@ companies = {
     15: 'MOVEMENT MT',
     16: 'MOVEMENT RS',
 }
-template_cols = [
+TEMPLATE_COLS = [
     'ano',
     'mes',
     'cod_cliente',
@@ -150,7 +135,7 @@ template_cols = [
     'desc_marca',
     'empresa_nota_fiscal',
 ]
-filter_cols = [
+FILTER_COLS = [
     'Ano',
     'Mês',
     'Empresa',
@@ -159,4 +144,98 @@ filter_cols = [
     'Canal de Vendas',
     'Estado',
     'Situação',
+]
+CUSTOMER_DETAILS_NUM_COLS = {
+    'cod_cliente': np.int64,
+    'dias_atraso': np.int64,
+    'valor_devido': np.float64,
+    'ultimo_ano_ativo': np.int64,
+}
+CUSTOMER_DETAILS_DATETIME_COLS = [
+    'data_cadastro',
+    'dt_primeira_compra',
+    'dt_ultima_compra',
+]
+DAILY_BILLINGS_NUM_COLS = {
+    'ano': np.int64,
+    'mes': np.int64,
+    'empresa_pedido': np.int64,
+    'empresa_nota_fiscal': np.int64,
+    'cod_cliente': np.int64,
+    'cod_colaborador': np.int64,
+    'cod_pedido': np.int64,
+    'cod_situacao': np.int64,
+    'cod_grupo_produto': np.int64,
+    'cod_grupo_pai': np.int64,
+    'cod_marca': np.int64,
+    'custo_total': np.float64,
+    'custo_kami': np.float64,
+    'qtd': np.int64,
+    'preco_unit_original': np.float64,
+    'preco_total_original': np.float64,
+    'margem_bruta': np.float64,
+    'preco_total': np.float64,
+    'preco_desconto_rateado': np.float64,
+    'vl_total_pedido': np.float64,
+    'desconto_pedido': np.float64,
+    'valor_nota': np.float64,
+    'total_bruto': np.float64,
+}
+MONTHLY_BILLINGS_NUM_COLS = {
+    'ano': np.int64,
+    'mes': np.int64,
+    'cod_empresa': np.int64,
+    'cod_pedido': np.int64,
+    'cod_cliente': np.int64,
+    'situacao_pedido': np.int64,
+    'cod_colaborador': np.int64,
+    'qtd': np.int64,
+    'custo_total': np.float64,
+    'custo_kami': np.float64,
+    'preco_unit_original': np.float64,
+    'preco_total_original': np.float64,
+    'margem_bruta': np.float64,
+    'preco_total': np.float64,
+    'preco_desconto_rateado': np.float64,
+    'vl_total_pedido': np.float64,
+    'desconto_pedido': np.float64,
+    'valor_nota': np.float64,
+    'situacao_entrega': np.int64,
+    'empresa_pedido': np.int64,
+    'empresa_nf': np.int64,
+}
+MONTHLY_BILLINGS_SCRIPT = 'SELECT * FROM vw_monthly_billings'
+DAILY_BILLINGS_SCRIPT = f'SELECT * FROM vw_daily_billings AS vdb \
+    WHERE vdb.ano >= {STARTING_YEAR}'
+CUSTOMER_DETAILS_SCRIPT = f'SELECT * FROM vw_customer_details AS vcd WHERE vcd.ultimo_ano_ativo >= {STARTING_YEAR}'
+BILLINGS_DATETIME_COLS = [
+    'dt_implante_pedido',
+    'dt_entrega_comprometida',
+    'dt_faturamento',
+]
+ODERS_COLS_HEAD = [
+    'ano',
+    'mes',
+    'empresa_pedido',
+    'empresa_nota_fiscal',
+    'cod_cliente',
+    'cod_colaborador',
+    'nome_colaborador',
+    'cod_pedido',
+    'nr_ped_compra_cli',
+    'cod_situacao',
+    'desc_situacao',
+    'nop',
+    'cfop',
+    'cod_cond_pagto',
+    'cod_forma_pagto',
+    'forma_pgto',
+    'tb_preco',
+    'vl_total_pedido',
+    'desconto_pedido',
+    'valor_nota',
+    'total_bruto',
+    'dt_implante_pedido',
+    'dt_entrega_comprometida',
+    'dt_faturamento'
 ]

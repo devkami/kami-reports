@@ -1,33 +1,41 @@
 import logging
+from datetime import datetime as dt
+from datetime import timedelta as td
+from typing import Dict, List
+
 import pandas as pd
-from typing import List, Dict
 from constant import (
-    columns_names_head,
-    sale_nops,
-    trousseau_nops,
-    subsidized_nops,
-    months_ptbr_abbr,
-    starting_year,
-    current_year,
-    tags,
-    current_month,
-    trans_cols,
-    template_cols,
-    companies,
-    months_ptbr
+    COLUMNS_NAMES_HEAD,
+    COMPANIES,
+    CURRENT_MONTH,
+    CURRENT_YEAR,
+    MONTHS_PTBR,
+    MONTHS_PTBR_ABBR,
+    SALE_NOPS,
+    STARTING_YEAR,
+    SUBSIDIZED_NOPS,
+    TAGS,
+    TEMPLATE_COLS,
+    TRANS_COLS,
+    TROUSSEAU_NOPS,
 )
-from datetime import datetime as dt, timedelta as td
-from numpy import dtype
+from database import (
+    get_vw_customer_details,
+    get_vw_daily_billings,
+    get_vw_monthly_billings,
+)
 from kami_logging import benchmark_with, logging_with
-from database import get_vw_customer_details, get_vw_daily_billings, get_vw_monthly_billings
+from numpy import dtype
 
 dataframe = logging.getLogger('dataframe')
+
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_sales_lines_df():
     sales_lines_df = get_vw_daily_billings()
     return sales_lines_df
+
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
@@ -42,95 +50,20 @@ def get_monthly_billings_df():
     monthly_billings = get_vw_monthly_billings()
     return monthly_billings
 
-def group_by_orders(df, order_cols) -> pd.DataFrame:
+
+def group_by_cols(df, group_cols) -> pd.DataFrame:
     df = df.sort_values(['ano', 'mes'], ascending=False)
-    return df.drop_duplicates(subset=order_cols)
+    return df.drop_duplicates(subset=group_cols)
 
 
 def clean_strtoint_col(df, number_col):
     if dtype(df[number_col]) not in ['int64', 'float64']:
         return df[number_col].str.extract(pat='(\d+)', expand=False)
 
-
-def convert_number_cols(df):
-    str_to_int_cols = [
-        'cep',
-        'numero',
-        'empresa_nota_fiscal',
-        'cod_colaborador',
-        'cod_pedido',
-        'nr_ped_compra_cli',
-        'cod_situacao',
-        'cod_forma_pagto',
-        'cod_grupo_produto',
-        'cod_grupo_pai',
-        'cod_marca',
-    ]
-    int_cols = ['dias_atraso', 'qtd']
-    float_cols = [
-        'valor_devido',
-        'custo_total',
-        'custo_kami',
-        'preco_unit_original',
-        'preco_total_original',
-        'margem_bruta',
-        'preco_total',
-        'preco_desconto_rateado',
-        'vl_total_pedido',
-        'desconto_pedido',
-        'valor_nota',
-        'total_bruto',
-    ]
-
-    for str_to_int_col in str_to_int_cols:
-        df[str_to_int_col] = clean_strtoint_col(df, str_to_int_col)
-
-    for int_col in int_cols:
-        df[int_col] = df[int_col].fillna(0).astype(int)
-
-    for float_col in float_cols:
-        df[float_col] = df[float_col].fillna(0).astype(float)
-
-    return df
-
-
-def clean_orders_df(orders_df) -> pd.DataFrame:
-    int_cols = [
-        'numero',
-        'empresa_nota_fiscal',
-        'dias_atraso',
-        'cod_colaborador',
-        'cod_pedido',
-        'nr_ped_compra_cli',
-        'cod_situacao',
-        'cod_forma_pagto',
-        'cod_produto',
-        'cod_grupo_produto',
-        'cod_grupo_pai',
-        'cod_marca',
-        'qtd',
-    ]
-    float_cols = [
-        'valor_devido',
-        'custo_total',
-        'custo_kami',
-        'preco_unit_original',
-        'preco_total_original',
-        'margem_bruta',
-        'preco_total',
-        'preco_desconto_rateado',
-        'vl_total_pedido',
-        'desconto_pedido',
-        'valor_nota',
-        'total_bruto',
-    ]
-    return convert_number_cols(orders_df, int_cols, float_cols)
-
-
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def build_orders_df(df):
-    return group_by_orders(df, order_cols=['cod_pedido'])
+def build_orders_df(df):    
+    return group_by_cols(df, ['cod_pedido'])
 
 
 def filter_orders_by_nops(orders_df, nops) -> pd.DataFrame:
@@ -140,7 +73,7 @@ def filter_orders_by_nops(orders_df, nops) -> pd.DataFrame:
 def flat_and_tag_motnh_and_year_cols(df, tag='') -> pd.DataFrame:
     tag = f'_{tag}' if tag else tag
     df.columns = [
-        f'{months_ptbr_abbr.get(int(x[1]))}_{x[0]}{tag}' for x in df.columns
+        f'{MONTHS_PTBR_ABBR.get(int(x[1]))}_{x[0]}{tag}' for x in df.columns
     ]
     return df
 
@@ -167,7 +100,7 @@ def sum_col_by_costumer(orders_df, col) -> pd.DataFrame:
 def count_sales_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         count_col_by_costumer(
-            filter_orders_by_nops(orders_df, sale_nops), col='cod_pedido'
+            filter_orders_by_nops(orders_df, SALE_NOPS), col='cod_pedido'
         ),
         tag='vendas',
     )
@@ -181,9 +114,9 @@ def count_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
         freq=freq,
     )
     period_cols = [
-        f'{months_ptbr_abbr[p.month]}_{p.year}_vendas'
+        f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_vendas'
         for p in period
-        if f'{months_ptbr_abbr[p.month]}_{p.year}_vendas'
+        if f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_vendas'
         in count_sales_df.columns
     ]
     return count_sales_df[period_cols].sum(axis=1)
@@ -192,7 +125,7 @@ def count_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
 def sum_net_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         sum_col_by_costumer(
-            orders_df=filter_orders_by_nops(orders_df, sale_nops),
+            orders_df=filter_orders_by_nops(orders_df, SALE_NOPS),
             col='valor_nota',
         ),
         tag='liquido',
@@ -202,7 +135,7 @@ def sum_net_by_costumer(orders_df) -> pd.DataFrame:
 def sum_gross_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         sum_col_by_costumer(
-            orders_df=filter_orders_by_nops(orders_df, sale_nops),
+            orders_df=filter_orders_by_nops(orders_df, SALE_NOPS),
             col='total_bruto',
         ),
         tag='bruto',
@@ -212,7 +145,7 @@ def sum_gross_by_costumer(orders_df) -> pd.DataFrame:
 def sum_trousseau_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         sum_col_by_costumer(
-            filter_orders_by_nops(orders_df, trousseau_nops), col='valor_nota'
+            filter_orders_by_nops(orders_df, TROUSSEAU_NOPS), col='valor_nota'
         ),
         tag='enxoval',
     )
@@ -221,7 +154,7 @@ def sum_trousseau_by_costumer(orders_df) -> pd.DataFrame:
 def sum_subsidized_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         sum_col_by_costumer(
-            filter_orders_by_nops(orders_df, subsidized_nops), col='valor_nota'
+            filter_orders_by_nops(orders_df, SUBSIDIZED_NOPS), col='valor_nota'
         ),
         tag='bonificado',
     )
@@ -230,7 +163,7 @@ def sum_subsidized_by_costumer(orders_df) -> pd.DataFrame:
 def sum_discount_by_costumer(orders_df) -> pd.DataFrame:
     return flat_and_tag_motnh_and_year_cols(
         sum_col_by_costumer(
-            filter_orders_by_nops(orders_df, sale_nops), 'desconto_pedido'
+            filter_orders_by_nops(orders_df, SALE_NOPS), 'desconto_pedido'
         ),
         tag='desconto',
     )
@@ -243,9 +176,9 @@ def sum_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
         freq=freq,
     )
     period_cols = [
-        f'{months_ptbr_abbr[p.month]}_{p.year}_liquido'
+        f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido'
         for p in period
-        if f'{months_ptbr_abbr[p.month]}_{p.year}_liquido' in orders_df.columns
+        if f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido' in orders_df.columns
     ]
     return orders_df[period_cols].astype('float').sum(axis=1)
 
@@ -256,9 +189,9 @@ def build_master_df() -> pd.DataFrame:
     master_df = pd.DataFrame()
     sales_bi_df = get_sales_bi_df()
     orders_df = build_orders_df(sales_bi_df)
-    head_df = group_by_orders(sales_bi_df, order_cols=['cod_cliente', 'cod_marca'])[
-        columns_names_head
-    ]
+    head_df = group_by_cols(
+        sales_bi_df, group_cols=['cod_cliente', 'cod_marca']
+    )[COLUMNS_NAMES_HEAD]
     index_cols = ['cod_cliente', 'cod_marca']
     trousseau_df = sum_trousseau_by_costumer(orders_df)
     subsidized_df = sum_subsidized_by_costumer(orders_df)
@@ -270,7 +203,7 @@ def build_master_df() -> pd.DataFrame:
 
     net_df['qtd_total_compras'] = count_sales_by_costumer_and_period(
         sales_bi_df,
-        start_date=starting_year,
+        start_date=STARTING_YEAR,
         end_date=dt.now().strftime('%Y-%m'),
         freq='M',
     )
@@ -315,21 +248,20 @@ def build_master_df() -> pd.DataFrame:
         master_kpis_df = pd.concat(dfs, ignore_index=False, axis=1)
         master_df = head_df.merge(
             master_kpis_df.reset_index(), on=index_cols, how='outer'
-        )        
-        master_df = clean_master_df(master_df)
-        master_kpi_df = calculate_master_kpis(master_df)        
+        )
+        master_df = calculate_master_kpis(clean_master_df(master_df))
 
-    return master_kpi_df
+    return master_df
 
 
 def get_tagged_columns():
     period = pd.period_range(
-        start=starting_year, end=f'{current_year}-{current_month}', freq='M'
+        start=STARTING_YEAR, end=f'{CURRENT_YEAR}-{CURRENT_MONTH}', freq='M'
     )
     return [
-        f'{months_ptbr_abbr[p.month]}_{p.year}{tag}'
+        f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}{tag}'
         for p in period
-        for tag in tags
+        for tag in TAGS
     ]
 
 
@@ -357,18 +289,18 @@ def clean_master_df(df):
 def calculate_accumulated_past_years(master_df):
     df = master_df
     month_period = pd.period_range(
-        start=starting_year, end=f'{current_year - 1}-12', freq='M'
+        start=STARTING_YEAR, end=f'{CURRENT_YEAR - 1}-12', freq='M'
     )
     year_period = pd.period_range(
-        start=starting_year, end=current_year - 1, freq='Y'
+        start=STARTING_YEAR, end=CURRENT_YEAR - 1, freq='Y'
     )
     for y in year_period:
-        for tag in tags:
+        for tag in TAGS:
             accumulated = [
-                f'{months_ptbr_abbr[p.month]}_{y.year}{tag}'
+                f'{MONTHS_PTBR_ABBR[p.month]}_{y.year}{tag}'
                 for p in month_period
                 if p.year == y.year
-                and f'{months_ptbr_abbr[p.month]}_{y.year}{tag}' in df.columns
+                and f'{MONTHS_PTBR_ABBR[p.month]}_{y.year}{tag}' in df.columns
             ]
             if tag == '_liquido':
                 df[f'FAT. LÍQ. {y.year}'] = df[accumulated].sum(axis=1)
@@ -396,50 +328,50 @@ def calculate_accumulated_past_years(master_df):
 def calculate_year_to_date(master_df):
     df = master_df
     this_year = pd.period_range(
-        start=current_year, end=f'{current_year}-{current_month -1}', freq='M'
+        start=CURRENT_YEAR, end=f'{CURRENT_YEAR}-{CURRENT_MONTH -1}', freq='M'
     )
-    for tag in tags:
+    for tag in TAGS:
         this_year_accumulated = [
-            f'{ months_ptbr_abbr[p.month]}_{p.year}{tag}'
+            f'{ MONTHS_PTBR_ABBR[p.month]}_{p.year}{tag}'
             for p in this_year
-            if f'{ months_ptbr_abbr[p.month]}_{p.year}{tag}' in df.columns
+            if f'{ MONTHS_PTBR_ABBR[p.month]}_{p.year}{tag}' in df.columns
         ]
         last_year_accumulated = [
-            f'{ months_ptbr_abbr[p.month]}_{p.year-1}{tag}'
+            f'{ MONTHS_PTBR_ABBR[p.month]}_{p.year-1}{tag}'
             for p in this_year
-            if f'{ months_ptbr_abbr[p.month]}_{p.year-1}{tag}' in df.columns
+            if f'{ MONTHS_PTBR_ABBR[p.month]}_{p.year-1}{tag}' in df.columns
         ]
 
         if tag == '_liquido':
-            df[f'FAT. LÍQ. {current_year} YTD'] = df[
+            df[f'FAT. LÍQ. {CURRENT_YEAR} YTD'] = df[
                 this_year_accumulated
             ].sum(axis=1) - df[last_year_accumulated].sum(axis=1)
         if tag == '_desconto':
-            df[f'TT  DESC. {current_year} YTD'] = (
+            df[f'TT  DESC. {CURRENT_YEAR} YTD'] = (
                 df[this_year_accumulated].sum(axis=1) * -1
             ) - (df[last_year_accumulated].sum(axis=1) * -1)
         if tag == '_bonificado':
-            df[f'TT BONIFICADO {current_year} YTD'] = df[
+            df[f'TT BONIFICADO {CURRENT_YEAR} YTD'] = df[
                 this_year_accumulated
             ].sum(axis=1) - df[last_year_accumulated].sum(axis=1)
         if tag == '_enxoval':
-            df[f'TT ENXOVAL {current_year} YTD'] = df[
+            df[f'TT ENXOVAL {CURRENT_YEAR} YTD'] = df[
                 this_year_accumulated
             ].sum(axis=1) - df[last_year_accumulated].sum(axis=1)
 
-    df[f'FAT.  BRUTO {current_year} YTD'] = (
-        df[f'FAT. LÍQ. {current_year} YTD']
-        + df[f'TT  DESC. {current_year} YTD']
+    df[f'FAT.  BRUTO {CURRENT_YEAR} YTD'] = (
+        df[f'FAT. LÍQ. {CURRENT_YEAR} YTD']
+        + df[f'TT  DESC. {CURRENT_YEAR} YTD']
     )
 
-    df[f'DESC. % {current_year} YTD'] = (
-        df[f'TT  DESC. {current_year} YTD']
-        / df[f'FAT.  BRUTO {current_year} YTD']
+    df[f'DESC. % {CURRENT_YEAR} YTD'] = (
+        df[f'TT  DESC. {CURRENT_YEAR} YTD']
+        / df[f'FAT.  BRUTO {CURRENT_YEAR} YTD']
     )
 
-    df[f'BONIF. % {current_year} YTD'] = (
-        df[f'TT BONIFICADO {current_year} YTD']
-        / df[f'FAT. LÍQ. {current_year} YTD']
+    df[f'BONIF. % {CURRENT_YEAR} YTD'] = (
+        df[f'TT BONIFICADO {CURRENT_YEAR} YTD']
+        / df[f'FAT. LÍQ. {CURRENT_YEAR} YTD']
     )
 
     return df
@@ -457,17 +389,18 @@ def calculate_master_kpis(master_df):
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_sales_bi_df():
-    sales_bi_df  = pd.DataFrame()
+    sales_bi_df = pd.DataFrame()
     customer_df = get_customer_details_df()
-    sales_lines_df = get_sales_lines_df()  
+    sales_lines_df = get_sales_lines_df()
     sales_bi_df = sales_lines_df.merge(
         customer_df,
         left_on=['cod_cliente'],
         right_on=['cod_cliente'],
         how='left',
     )
-    sales_bi_df = convert_number_cols(sales_bi_df)
+    sales_bi_df['cep'] = clean_strtoint_col(sales_bi_df, 'cep')
     return sales_bi_df
+
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
@@ -479,7 +412,7 @@ def get_sales_orders_df(sales_bi_df):
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_template_df(df) -> pd.DataFrame:
-    return df[template_cols]
+    return df[TEMPLATE_COLS]
 
 
 def get_opt_list_from_cols(
@@ -517,7 +450,7 @@ def get_opt_list_from_col(df_template, col) -> List[Dict]:
 
 def get_month_opt_list(df_template) -> List[Dict]:
     df_template['mes_abbr'] = df_template['mes'].apply(
-        lambda x: months_ptbr[x]
+        lambda x: MONTHS_PTBR[x]
     )
     months_list = get_opt_list_from_cols(
         df_template, value_col='mes', label_col='mes_abbr', label_sort=False
@@ -590,7 +523,7 @@ def get_company_opt_list(df_template) -> List[Dict]:
             'empresa_nota_fiscal'
         ]
         .dropna()
-        .apply(lambda x: companies[x])
+        .apply(lambda x: COMPANIES[x])
     )
     return get_opt_list_from_cols(
         df_template,
@@ -605,6 +538,7 @@ def get_key_from_value(dictionary, value):
     if keys:
         return keys[0]
     return None
+
 
 def get_opt_lists_from_df(df, cols) -> Dict:
     opt_lists = {}
@@ -624,7 +558,7 @@ def get_opt_lists_from_df(df, cols) -> Dict:
         'company': get_company_opt_list(df_template),
     }
     for col in cols:
-        en_col = get_key_from_value(trans_cols, col)
+        en_col = get_key_from_value(TRANS_COLS, col)
         if en_col:
             opt_lists[en_col] = all_lists[en_col]
     return opt_lists

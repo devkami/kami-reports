@@ -1,13 +1,25 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from os import getenv
+from os import getenv, system
+from typing import Dict, List
+
 import pandas as pd
+from constant import (
+    BILLINGS_DATETIME_COLS,
+    CUSTOMER_DETAILS_DATETIME_COLS,
+    CUSTOMER_DETAILS_NUM_COLS,
+    CUSTOMER_DETAILS_SCRIPT,
+    DAILY_BILLINGS_NUM_COLS,
+    DAILY_BILLINGS_SCRIPT,
+    MONTHLY_BILLINGS_NUM_COLS,
+    MONTHLY_BILLINGS_SCRIPT,
+)
 from dotenv import load_dotenv
+from filemanager import get_file_list_from
 from kami_logging import benchmark_with, logging_with
 from sqlalchemy import create_engine
 from sqlalchemy.engine import URL
-from constant import starting_year
 
 db_connector_logger = logging.getLogger('database')
 load_dotenv()
@@ -20,30 +32,76 @@ connection_url = URL.create(
 )
 
 
-def get_dataframe_from_sql(sql_script: str) -> pd.DataFrame:
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def execute_query(sql_file):
+    db_connector_logger.info(f'execute {sql_file}')
+    system(
+        f"mysql -u {getenv('DB_USER')} -p{getenv('DB_USER_PASSWORD')} -h {getenv('DB_HOST')} -P {getenv('DB_PORT')} < {sql_file}"
+    )
+
+
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def execute_queries(sql_files):
+    sql_files.sort()
+    if len(sql_files):
+        for sql_file in sql_files:
+            execute_query(sql_file)
+
+
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def update_database_views():
+    views_script = get_file_list_from('kami_reports/data/in')
+    execute_queries(views_script)
+
+
+def get_dataframe_from_sql_query(
+    sql_script: str, date_cols: List[str] = None, cols_types: Dict = None
+) -> pd.DataFrame:
     sql_engine = create_engine(connection_url, pool_recycle=3600)
     sql_engine.connect()
-    df = pd.read_sql_query(sql_script, sql_engine)
+    df = pd.read_sql_query(
+        str(sql_script), sql_engine, parse_dates=date_cols, dtype=cols_types
+    )
+    return pd.DataFrame(df)
+
+
+def get_dataframe_from_sql_table(
+    tablename: str, date_cols: List[str] = None
+) -> pd.DataFrame:
+    sql_engine = create_engine(connection_url, pool_recycle=3600)
+    sql_engine.connect()
+    df = pd.read_sql_table(tablename, sql_engine, parse_dates=date_cols)
     return pd.DataFrame(df)
 
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
 def get_vw_monthly_billings() -> pd.DataFrame:
-    return get_dataframe_from_sql('SELECT * FROM vw_monthly_billings')
+    return get_dataframe_from_sql_query(
+        MONTHLY_BILLINGS_SCRIPT,
+        date_cols=BILLINGS_DATETIME_COLS,
+        cols_types=MONTHLY_BILLINGS_NUM_COLS,
+    )
 
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
 def get_vw_daily_billings() -> pd.DataFrame:
-    return get_dataframe_from_sql(
-        f'SELECT * FROM vw_daily_billings AS vdb WHERE vdb.ano >= {starting_year}'
+    return get_dataframe_from_sql_query(
+        DAILY_BILLINGS_SCRIPT,
+        date_cols=BILLINGS_DATETIME_COLS,
+        cols_types=DAILY_BILLINGS_NUM_COLS,
     )
 
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
 def get_vw_customer_details() -> pd.DataFrame:
-    return get_dataframe_from_sql(
-        f'SELECT * FROM vw_customer_details AS vcd WHERE vcd.ultimo_ano_ativo >= {starting_year}'
+    return get_dataframe_from_sql_query(
+        CUSTOMER_DETAILS_SCRIPT,
+        date_cols=CUSTOMER_DETAILS_DATETIME_COLS,
+        cols_types=CUSTOMER_DETAILS_NUM_COLS,
     )

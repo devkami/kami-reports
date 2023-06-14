@@ -24,22 +24,22 @@ CREATE OR REPLACE VIEW vw_daily_billings AS SELECT
 ,IFNULL(CONVERT(grupo_produto_pai.desc_abrev, CHAR), '0') AS desc_grupo_pai
 ,IFNULL(CONVERT(marca.cod_marca, CHAR), '0') AS cod_marca
 ,IFNULL(CONVERT(marca.desc_abrev, CHAR), '0') AS desc_marca
-,IFNULL(CONVERT(ROUND(produto_empresa.vl_custo_total,2),CHAR),'0') AS custo_total
-,IFNULL(CONVERT(ROUND(IFNULL(produto_empresa.vl_custo_kami,(SELECT cpi.preco_unit FROM cd_preco_item AS cpi WHERE cpi.cod_produto = pedido_item.cod_produto AND cpi.tb_preco = 'TabTbCusto')),2),CHAR),'0') AS custo_kami
+,IFNULL(CONVERT(produto_empresa.vl_custo_total DECIMAL(10,2)), 0.0) AS custo_total
+,IFNULL(CONVERT(IFNULL(produto_empresa.vl_custo_kami,(SELECT cpi.preco_unit FROM cd_preco_item AS cpi WHERE cpi.cod_produto = pedido_item.cod_produto AND cpi.tb_preco = 'TabTbCusto')) DECIMAL(10,2)), 0.0) AS custo_kami
 ,IFNULL(CONVERT(pedido_item.tb_preco, CHAR), '0') AS tb_preco
-,IFNULL(CONVERT(ROUND(pedido_item.qtd,0), CHAR), '0') AS qtd
-,IFNULL(CONVERT(ROUND(pedido_item.preco_venda,2), CHAR), '0') AS preco_unit_original
-,IFNULL(CONVERT(ROUND(pedido_item.qtd * pedido_item.preco_venda,2), CHAR), '0') AS preco_total_original
-,IFNULL(CONVERT(ROUND((((pedido_item.preco_venda / produto_empresa.vl_custo_total)*100)-100),2), CHAR), '0') AS margem_bruta
-,IFNULL(CONVERT(ROUND(pedido_item.preco_total,2), CHAR), '0') AS preco_total
-,IFNULL(CONVERT(ROUND((pedido_item.preco_total -( pedido_item.preco_total / pedido.vl_total_produtos) * COALESCE(pedido.vl_desconto,0)),2), CHAR), '0') AS preco_desconto_rateado
-,IFNULL(CONVERT(ROUND(pedido.vl_total_produtos,2), CHAR), '0') AS vl_total_pedido
-,IFNULL(CONVERT(ROUND((pedido.vl_desconto * -1),2), CHAR), '0') AS desconto_pedido
-,IFNULL(CONVERT(ROUND((CASE WHEN nota_fiscal.vl_total_nota_fiscal > 0 THEN nota_fiscal.vl_total_nota_fiscal ELSE nota_fiscal_2.vl_total_nota_fiscal END),2), CHAR), '0') AS valor_nota
-,IFNULL(CONVERT(ROUND(((CASE WHEN nota_fiscal.vl_total_nota_fiscal > 0 THEN nota_fiscal.vl_total_nota_fiscal ELSE nota_fiscal_2.vl_total_nota_fiscal END) + pedido.vl_desconto),2), CHAR), '0') AS total_bruto
-,IFNULL(CONVERT(DATE_FORMAT(pedido.dt_implant, "%d/%m/%Y"), CHAR), '0') AS dt_implante_pedido
-,IFNULL(CONVERT(DATE_FORMAT(pedido.dt_entrega_comprometida, "%d/%m/%Y"), CHAR), '0') AS dt_entrega_comprometida
-,IFNULL(CONVERT(DATE_FORMAT(CASE WHEN nota_fiscal.dt_emissao > 0 THEN nota_fiscal.dt_emissao ELSE nota_fiscal_2.dt_emissao END, "%d/%m/%Y"), CHAR), '0') AS dt_faturamento
+,IFNULL(CONVERT(pedido_item.qtd, UNSIGNED), 0) AS qtd
+,IFNULL(CONVERT(pedido_item.preco_venda, DECIMAL(10,2)), 0.0) AS preco_unit_original
+,IFNULL(CONVERT(pedido_item.qtd * pedido_item.preco_venda, DECIMAL(10,2)), 0.0) AS preco_total_original
+,IFNULL(CONVERT((((pedido_item.preco_venda / produto_empresa.vl_custo_total)*100)-100), DECIMAL(10,2)), 0.0) AS margem_bruta
+,IFNULL(CONVERT(pedido_item.preco_total, DECIMAL(10,2)), 0.0) AS preco_total
+,IFNULL(CONVERT((pedido_item.preco_total -( pedido_item.preco_total / pedido.vl_total_produtos) * COALESCE(pedido.vl_desconto,0)), DECIMAL(10,2)), 0.0) AS preco_desconto_rateado
+,IFNULL(CONVERT(pedido.vl_total_produtos, DECIMAL(10,2)), 0.0) AS vl_total_pedido
+,IFNULL(CONVERT((pedido.vl_desconto * -1), DECIMAL(10,2)), 0.0) AS desconto_pedido
+,IFNULL(CONVERT((CASE WHEN nota_fiscal.vl_total_nota_fiscal > 0 THEN nota_fiscal.vl_total_nota_fiscal ELSE nota_fiscal_2.vl_total_nota_fiscal END), DECIMAL(10,2)), 0.0) AS valor_nota
+,IFNULL(CONVERT(((CASE WHEN nota_fiscal.vl_total_nota_fiscal > 0 THEN nota_fiscal.vl_total_nota_fiscal ELSE nota_fiscal_2.vl_total_nota_fiscal END) + pedido.vl_desconto), DECIMAL(10,2)), 0.0) AS total_bruto
+,IFNULL(CONVERT(pedido.dt_implant, DATETIME), '0000-00-00 00:00:00') AS dt_implante_pedido
+,IFNULL(CONVERT(pedido.dt_entrega_comprometida, DATETIME), '0000-00-00 00:00:00') AS dt_entrega_comprometida
+,IFNULL(CONVERT((CASE WHEN nota_fiscal.dt_emissao > 0 THEN nota_fiscal.dt_emissao ELSE nota_fiscal_2.dt_emissao END), DATETIME), '0000-00-00 00:00:00') AS dt_faturamento
 FROM vd_pedido_item AS pedido_item
 LEFT JOIN vd_pedido AS pedido ON (pedido.cod_pedido = pedido_item.cod_pedido AND pedido.cod_empresa = pedido_item.cod_empresa)
 LEFT JOIN sg_colaborador AS colaborador ON (colaborador.cod_colaborador = pedido.cod_colaborador)
