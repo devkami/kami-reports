@@ -1,17 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from datetime import date, datetime
+from datetime import datetime
 
 import dash_bootstrap_components as dbc
 import pkg_resources
-from components import date_picker, get_filters
-from constant import (
-    CURRENT_DAY,
-    CURRENT_MONTH,
-    CURRENT_YEAR,
-    MONTHS_PTBR_ABBR,
-    PAGE_SIZE,
-)
+from constant import CURRENT_MONTH, CURRENT_YEAR, MONTHS_PTBR_ABBR, PAGE_SIZE
 from dash import dash_table, dcc, html
 from dash_bootstrap_templates import ThemeSwitchAIO
 
@@ -20,33 +13,20 @@ config_graph = {'displayModeBar': False, 'showTips': True}
 config_indicator = {'displayModeBar': False, 'showTips': False}
 indicator_style = {'height': '40vh'}
 tab_card = {'height': '100%'}
-main_config = {
-    'hovermode': 'x unified',
-    'legend': {
-        'yanchor': 'top',
-        'y': 0.9,
-        'xanchor': 'left',
-        'x': 0.1,
-        'title': {'text': None},
-        'font': {'color': 'white'},
-        'bgcolor': 'rgba(0,0,0,0.5)',
-    },
-    'margin': {'l': 10, 'r': 10, 't': 10, 'b': 10},
-}
 template_ligth = 'spacelab'
 template_dark = 'slate'
 url_theme1 = dbc.themes.SPACELAB
 url_theme2 = dbc.themes.SLATE
 
 # Layout ->
-def get_data_tab(df):
+def get_data_tab(df, cols_size):
     return (
         html.Div(
             [
                 dbc.Button(
                     'Exportar Mestre',
                     color='primary',
-                    className='me-1, m-2',
+                    className='me-1, mr-2 my-2',
                     id='export-master-button',
                 ),
                 dcc.Download(id='download-master'),
@@ -62,6 +42,7 @@ def get_data_tab(df):
                     id='table-paging-with-graph',
                     columns=[{'name': i, 'id': i} for i in df.columns],
                     fixed_rows={'headers': True, 'data': 0},
+                    page_count=int(len(df) / PAGE_SIZE),
                     page_current=0,
                     page_size=PAGE_SIZE,
                     page_action='custom',
@@ -70,6 +51,15 @@ def get_data_tab(df):
                     sort_action='custom',
                     sort_mode='multi',
                     sort_by=[],
+                    style_cell={'whiteSpace': 'normal'},
+                    style_data_conditional=[
+                        {
+                            'if': {'column_id': col_size['column']},
+                            'width': f"{col_size['len']*13}px",
+                        }
+                        for col_size in cols_size
+                    ],
+                    virtualization=True,
                 ),
             ],
             style={'height': 550, 'overflowY': 'scroll'},
@@ -98,7 +88,7 @@ def get_graph_tab(sales_teams_options):
                                 multi=True,
                             ),
                         ],
-                        className='my-2',
+                        className='my-2 dbc',
                     ),
                     html.Hr(),
                     dbc.Row(
@@ -263,6 +253,20 @@ def get_graph_tab(sales_teams_options):
     )
 
 
+def get_cols_size(customer_df):
+    cdf = customer_df.astype(str)
+    for column in cdf.columns:
+        cdf[f'len_{column}'] = cdf[column].apply(len)
+    return [
+        {
+            'column': column,
+            'len': max([cdf[f'len_{column}'].max(), len(column)]),
+        }
+        for column in cdf.columns
+        if 'len_' not in column
+    ]
+
+
 def get_sales_dashboard(df):
     return html.Div(
         id='maindiv',
@@ -276,8 +280,12 @@ def get_sales_dashboard(df):
                                 label='Métricas',
                                 children=get_graph_tab(df['equipe'].unique()),
                             ),
-                            dcc.Tab(label='Dados', children=get_data_tab(df)),
+                            dcc.Tab(
+                                label='Dados',
+                                children=get_data_tab(df, get_cols_size(df)),
+                            ),
                         ],
+                        className='dbc',
                     ),
                 ]
             ),
@@ -324,23 +332,6 @@ menu_head = dbc.Card(
 )
 
 
-def build_filters_menu(sales_bi_df):
-    return [
-        html.Center(
-            html.Legend(
-                'Filtros',
-                style={'font-size': '150%', 'align': 'center'},
-            )
-        ),
-        date_picker(
-            'geral',
-            date(min(sales_bi_df['ano'].unique()), 1, 1),
-            date(CURRENT_YEAR, CURRENT_MONTH, CURRENT_DAY),
-            'Período',
-        ),
-    ] + get_filters(sales_bi_df)
-
-
 def build_sidebar(components=[]):
     return html.Div(
         [
@@ -379,38 +370,6 @@ def build_sidebar(components=[]):
         className='my-3',
     )
 
-
-first_row = html.Div(
-    [
-        dbc.Row(
-            [
-                dbc.Col(
-                    [
-                        dbc.Card(
-                            [
-                                dbc.CardHeader(html.Center('Vendas Diárias')),
-                                dbc.CardBody(
-                                    [
-                                        dcc.Graph(
-                                            id='graph1',
-                                            className='dbc',
-                                            config=config_graph,
-                                        )
-                                    ]
-                                ),
-                            ],
-                            style=tab_card,
-                        )
-                    ],
-                    sm=12,
-                    lg=12,
-                )
-            ],
-            className='g-2 my-auto',
-            style={'margin-top': '7px'},
-        )
-    ]
-)
 
 footer_row = html.Footer(
     [
