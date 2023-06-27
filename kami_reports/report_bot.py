@@ -217,7 +217,7 @@ def deliver_master_reports(team_sales_bi_dfs, current_folders_id):
 def deliver_comercial_reports(current_folders_id):
     products_df = get_sales_lines_df()
     sales_bi_df = get_sales_bi_df(products_df)
-    generate_products_report(sales_bi_df)
+    """ generate_products_report(sales_bi_df)
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['products'],
@@ -227,7 +227,7 @@ def deliver_comercial_reports(current_folders_id):
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['master'],
-    )
+    ) """
     delete_old_files('data/out')
     team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df)
     deliver_products_reports(team_sales_bi_dfs, current_folders_id)
@@ -294,9 +294,9 @@ def main():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    delete_old_files('data/out')
     current_folders_id = create_gdrive_folders()
-    deliver_comercial_reports(current_folders_id)
+    delete_old_files('data/out')
+    deliver_monthly_reports(current_folders_id)
 
 
 if __name__ == '__main__':
