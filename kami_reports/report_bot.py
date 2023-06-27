@@ -18,13 +18,16 @@ from dataframe import (
     build_master_df,
     get_customer_details_df,
     get_monthly_billings_df,
+    get_sales_bi_df,
     get_sales_lines_df,
+    slice_sales_df_by_team,
 )
 from dotenv import load_dotenv
 from filemanager import delete_old_files
 from kami_gdrive import create_folder, gdrive_logger, upload_files_to
 from kami_logging import benchmark_with, logging_with
 from messages import send_messages_by_group
+from unidecode import unidecode
 
 report_bot_logger = logging.getLogger('report_bot')
 report_bot_logger.info('Loading Enviroment Variables')
@@ -66,17 +69,12 @@ def create_gdrive_folders():
         current_day_comercial_gdrive_folder, 'produtos'
     )
 
-    current_day_brands_gdrive_folder = create_folder(
-        current_day_gdrive_folder, 'marcas'
-    )
-
     return {
         'month': current_month_gdrive_folder,
         'comercial': current_day_comercial_gdrive_folder,
         'master': current_day_master_gdrive_folder,
         'products': current_day_products_gdrive_folder,
         'account': current_day_account_gdrive_folder,
-        'board': current_day_brands_gdrive_folder,
     }
 
 
@@ -108,8 +106,8 @@ def calculate_overdue_kpi(customer_df):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_master_report(filename):
-    master_df = build_master_df()
+def generate_master_report(sales_bi_df, filename='geral'):
+    master_df = build_master_df(sales_bi_df)
     if not master_df.empty:
         master_df.to_excel(
             f'data/out/mestre_{filename}.xlsx',
@@ -133,8 +131,7 @@ def generate_montlhy_report(montlhy_df, filename):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_products_report(filename):
-    products_df = get_sales_lines_df()
+def generate_products_report(products_df, filename='geral'):
     products_df.to_excel(
         f'data/out/produtos_{filename}.xlsx',
         sheet_name='PRODUTOS',
@@ -142,18 +139,17 @@ def generate_products_report(filename):
     )
 
 
-@benchmark_with(report_bot_logger)
-@logging_with(report_bot_logger)
-def generate_comercial_report(filename):
-    delete_old_files('data/out')
-    generate_products_report(filename)
-    generate_master_report(filename)
+def normalize_name(name):
+    return unidecode(
+        ''.join(
+            ch for ch in name.replace(' ', '_') if ch.isalpha() or ch == '_'
+        ).lower()
+    )
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def generate_overdue_report(customer_df, filename):
-    delete_old_files('data/out')
     overdue_df = calculate_overdue_kpi(customer_df)
     overdue_df.to_excel(
         f'data/out/inadimplentes_{filename}.xlsx',
@@ -165,7 +161,6 @@ def generate_overdue_report(customer_df, filename):
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def generate_future_bills_report(future_bills_df, filename):
-    delete_old_files('data/out')
     future_bills_df.to_excel(
         f'data/out/contas_a_receber{filename}.xlsx',
         sheet_name='PAGAMENTOS FUTUROS',
@@ -179,14 +174,66 @@ def is_comercial_weekday():
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_comercial_reports(current_folders_id):
-    generate_comercial_report('geral')
+def generate_products_reports_by_team(team_products_dfs):
+    for team_products_df_dict in team_products_dfs:
+        for team_name, team_product_df in team_products_df_dict.items():
+            team_name = normalize_name(team_name)
+            generate_products_report(team_product_df, team_name)
+
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def deliver_products_reports(team_products_dfs, current_folders_id):
+    generate_products_reports_by_team(team_products_dfs)
     upload_files_to(
         source='data/out',
-        destiny=current_folders_id['board'],
+        destiny=current_folders_id['products'],
     )
+    delete_old_files('data/out')
+
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def generate_master_reports_by_team(team_sales_bi_dfs):
+    for team_sales_bi_df_dict in team_sales_bi_dfs:
+        for team_name, team_sales_bi_df in team_sales_bi_df_dict.items():
+            team_name = normalize_name(team_name)
+            generate_master_report(team_sales_bi_df, team_name)
+
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def deliver_master_reports(team_sales_bi_dfs, current_folders_id):
+    generate_master_reports_by_team(team_sales_bi_dfs)
+    upload_files_to(
+        source='data/out',
+        destiny=current_folders_id['master'],
+    )
+    delete_old_files('data/out')
+
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def deliver_comercial_reports(current_folders_id):
+    products_df = get_sales_lines_df()
+    sales_bi_df = get_sales_bi_df(products_df)
+    """ generate_products_report(sales_bi_df)
+    upload_files_to(
+        source='data/out',
+        destiny=current_folders_id['products'],
+    )
+    delete_old_files('data/out')
+    generate_master_report(sales_bi_df)
+    upload_files_to(
+        source='data/out',
+        destiny=current_folders_id['master'],
+    ) """
+    delete_old_files('data/out')
+    team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df)
+    deliver_products_reports(team_sales_bi_dfs, current_folders_id)
+    deliver_master_reports(team_sales_bi_dfs, current_folders_id)
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['board'], group='test'
+        gdrive_folder_id=current_folders_id['comercial'], group='comercial'
     )
 
 
@@ -205,22 +252,25 @@ def deliver_account_reports(current_folders_id):
         source='data/out',
         destiny=current_folders_id['account'],
     )
+    delete_old_files('data/out')
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['account'], group='test'
+        gdrive_folder_id=current_folders_id['account'], group='account'
     )
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_monthly_reports(current_folders_id):
+    delete_old_files('data/out')
     montlhy_df = get_monthly_billings_df()
     generate_montlhy_report(montlhy_df, 'geral')
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['month'],
     )
+    delete_old_files('data/out')
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['month'], group='test'
+        gdrive_folder_id=current_folders_id['month'], group='board'
     )
 
 
@@ -228,6 +278,7 @@ def deliver_monthly_reports(current_folders_id):
 @logging_with(report_bot_logger)
 def main():
     report_bot_logger.info('Start Execution.')
+    delete_old_files('data/out')
     current_folders_id = create_gdrive_folders()
 
     if is_comercial_weekday():
@@ -239,12 +290,12 @@ def main():
 
     delete_old_files('data/out')
 
+
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
     current_folders_id = create_gdrive_folders()
-    deliver_comercial_reports(current_folders_id)
-    deliver_account_reports(current_folders_id)
+    delete_old_files('data/out')
     deliver_monthly_reports(current_folders_id)
 
 

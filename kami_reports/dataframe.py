@@ -12,11 +12,11 @@ from constant import (
     MONTHS_PTBR,
     MONTHS_PTBR_ABBR,
     SALE_NOPS,
+    SALES_TEAMS,
     STARTING_YEAR,
     SUBSIDIZED_NOPS,
     TAGS,
     TEMPLATE_COLS,
-    TRANS_COLS,
     TROUSSEAU_NOPS,
 )
 from database import (
@@ -30,10 +30,18 @@ from numpy import dtype
 dataframe = logging.getLogger('dataframe')
 
 
+def get_sales_team(seller_id):
+    sellers = SALES_TEAMS.keys()
+    return SALES_TEAMS[seller_id] if seller_id in sellers else 'sem equipe'
+
+
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_sales_lines_df():
     sales_lines_df = get_vw_daily_billings()
+    sales_lines_df['equipe'] = sales_lines_df['cod_colaborador'].map(
+        get_sales_team
+    )
     return sales_lines_df
 
 
@@ -48,6 +56,9 @@ def get_customer_details_df():
 @logging_with(dataframe)
 def get_monthly_billings_df():
     monthly_billings = get_vw_monthly_billings()
+    monthly_billings['equipe'] = monthly_billings['cod_colaborador'].map(
+        get_sales_team
+    )
     return monthly_billings
 
 
@@ -60,9 +71,10 @@ def clean_strtoint_col(df, number_col):
     if dtype(df[number_col]) not in ['int64', 'float64']:
         return df[number_col].str.extract(pat='(\d+)', expand=False)
 
+
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def build_orders_df(df):    
+def build_orders_df(df):
     return group_by_cols(df, ['cod_pedido'])
 
 
@@ -185,9 +197,8 @@ def sum_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def build_master_df() -> pd.DataFrame:
+def build_master_df(sales_bi_df) -> pd.DataFrame:
     master_df = pd.DataFrame()
-    sales_bi_df = get_sales_bi_df()
     orders_df = build_orders_df(sales_bi_df)
     head_df = group_by_cols(
         sales_bi_df, group_cols=['cod_cliente', 'cod_marca']
@@ -388,10 +399,9 @@ def calculate_master_kpis(master_df):
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def get_sales_bi_df():
+def get_sales_bi_df(sales_lines_df):
     sales_bi_df = pd.DataFrame()
     customer_df = get_customer_details_df()
-    sales_lines_df = get_sales_lines_df()
     sales_bi_df = sales_lines_df.merge(
         customer_df,
         left_on=['cod_cliente'],
@@ -399,6 +409,7 @@ def get_sales_bi_df():
         how='left',
     )
     sales_bi_df['cep'] = clean_strtoint_col(sales_bi_df, 'cep')
+
     return sales_bi_df
 
 
@@ -557,8 +568,29 @@ def get_opt_lists_from_df(df, cols) -> Dict:
         'prod_band': get_prod_band_opt_list(df_template),
         'company': get_company_opt_list(df_template),
     }
-    for col in cols:
-        en_col = get_key_from_value(TRANS_COLS, col)
-        if en_col:
-            opt_lists[en_col] = all_lists[en_col]
     return opt_lists
+
+
+def slice_sales_df_by_team(sales_df) -> List[pd.DataFrame]:
+    sales_df_list = []
+    for team in sales_df['equipe'].unique():
+        sales_df_list.append({team: sales_df.loc[sales_df['equipe'] == team]})
+    return sales_df_list
+
+
+def add_ytd_cols(master_df):
+    for year in range(CURRENT_YEAR - 1, CURRENT_YEAR + 1):
+
+        period = pd.period_range(
+            start=f'1-{year}',
+            end=f'{CURRENT_MONTH}-{year}',
+            freq='M',
+        )
+        ytd_last_year_cols = [
+            f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido'
+            for p in period
+            if f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido'
+            in master_df.columns
+        ]
+        master_df[f'ytd_{year}'] = master_df[ytd_last_year_cols].sum(axis=1)
+    return master_df

@@ -1,7 +1,6 @@
 import json
 import logging
 from dataclasses import dataclass
-from datetime import datetime as dt
 from os import getenv
 from typing import List
 
@@ -10,8 +9,6 @@ from kami_logging import benchmark_with, logging_with
 from kami_messenger.botconversa import Botconversa
 from kami_messenger.email_messenger import EmailMessenger
 from kami_messenger.messenger import Message
-
-from filemanager import delete_old_files
 
 messages_looger = logging.getLogger('messages_generator')
 loader = FileSystemLoader('messages')
