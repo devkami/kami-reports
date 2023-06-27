@@ -10,7 +10,7 @@ SELECT DISTINCTROW
 ,IFNULL(CONVERT(cliente_endereco.endereco, CHAR), '0') AS endereco
 ,IFNULL(CONVERT(cliente_endereco.numero, CHAR), '0') AS numero
 ,IFNULL(CONVERT(cliente_endereco.cep, CHAR), '0') AS cep
-,IFNULL(CONVERT(cliente.dt_implant, DATETIME), '0000-00-00 00:00:00') AS data_cadastro
+,IFNULL(CONVERT(cliente.dt_implant, DATETIME), '0000-00-00 00:00:00') AS dt_cadastro
 ,IFNULL(CONVERT((SELECT CASE WHEN (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa)) > 0 THEN (TIMESTAMPDIFF(DAY,recebe.dt_vencimento, CURRENT_DATE())) ELSE  "0" END FROM fn_titulo_receber AS recebe WHERE recebe.cod_cliente = cliente.cod_cliente AND recebe.situacao < 30 AND recebe.dt_vencimento < SUBDATE(CURDATE(), INTERVAL 1 DAY) AND recebe.cod_empresa IN (1,2,3,4,5,6,9,10,11) group by recebe.cod_cliente), UNSIGNED), 0) AS dias_atraso
 ,IFNULL(CONVERT((SELECT CASE WHEN (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa)) > 0 THEN  (SUM(recebe.vl_total_titulo) - SUM(recebe.vl_total_baixa)) ELSE  "0" END FROM fn_titulo_receber AS recebe WHERE recebe.cod_cliente = cliente.cod_cliente AND recebe.situacao < 30 AND recebe.dt_vencimento < SUBDATE(CURDATE(), INTERVAL 1 DAY)  AND recebe.cod_empresa IN (1,2,3,4,5,6,9,10,11) group by recebe.cod_cliente), DECIMAL(10,2)), 0.0) AS valor_devido
 ,IFNULL(CONVERT((SELECT MIN(nf2.dt_emissao) FROM vd_nota_fiscal AS nf2 WHERE cliente.cod_cliente = nf2.cod_cliente AND nf2.situacao < 81 AND nf2.cod_empresa IN (1,2,3,4,5,6,9,10,11) AND nf2.nop IN ("6.102","6.404","BLACKFRIDAY","VENDA","VENDA_S_ESTOQUE","WORKSHOP")), DATETIME), '0000-00-00 00:00:00') AS dt_primeira_compra

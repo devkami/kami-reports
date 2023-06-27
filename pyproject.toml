@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "kami-reports"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["Maicon de Menezes <maicon@kamico.com.br>"]
 readme = "README.md"

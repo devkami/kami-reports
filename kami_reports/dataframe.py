@@ -17,7 +17,6 @@ from constant import (
     SUBSIDIZED_NOPS,
     TAGS,
     TEMPLATE_COLS,
-    TRANS_COLS,
     TROUSSEAU_NOPS,
 )
 from database import (
@@ -410,6 +409,7 @@ def get_sales_bi_df(sales_lines_df):
         how='left',
     )
     sales_bi_df['cep'] = clean_strtoint_col(sales_bi_df, 'cep')
+
     return sales_bi_df
 
 
@@ -568,10 +568,6 @@ def get_opt_lists_from_df(df, cols) -> Dict:
         'prod_band': get_prod_band_opt_list(df_template),
         'company': get_company_opt_list(df_template),
     }
-    for col in cols:
-        en_col = get_key_from_value(TRANS_COLS, col)
-        if en_col:
-            opt_lists[en_col] = all_lists[en_col]
     return opt_lists
 
 
@@ -580,3 +576,21 @@ def slice_sales_df_by_team(sales_df) -> List[pd.DataFrame]:
     for team in sales_df['equipe'].unique():
         sales_df_list.append({team: sales_df.loc[sales_df['equipe'] == team]})
     return sales_df_list
+
+
+def add_ytd_cols(master_df):
+    for year in range(CURRENT_YEAR - 1, CURRENT_YEAR + 1):
+
+        period = pd.period_range(
+            start=f'1-{year}',
+            end=f'{CURRENT_MONTH}-{year}',
+            freq='M',
+        )
+        ytd_last_year_cols = [
+            f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido'
+            for p in period
+            if f'{MONTHS_PTBR_ABBR[p.month]}_{p.year}_liquido'
+            in master_df.columns
+        ]
+        master_df[f'ytd_{year}'] = master_df[ytd_last_year_cols].sum(axis=1)
+    return master_df
