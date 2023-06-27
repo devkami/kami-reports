@@ -73,7 +73,7 @@ COLUMNS_NAMES_HEAD = [
     'nome_cliente',
     'razao_social',
     'ramo_atividade',
-    'data_cadastro',
+    'dt_cadastro',
     'bairro',
     'cidade',
     'uf',

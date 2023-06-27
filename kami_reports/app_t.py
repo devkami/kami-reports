@@ -1,15 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from os import sep
 
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
-from arrow import get
-from components import get_filter_mask
+from components import get_filter_mask, get_single_indicator, get_ytd_graph
 from constant import OPERATORS, TIMEOUT
 from dash import State, callback, dcc
 from dash.dependencies import Input, Output
@@ -22,9 +18,10 @@ from dataframe import (
 )
 from flask_caching import Cache
 from kami_logging import benchmark_with, logging_with
-from layout import get_page_layout, tab_card, template_dark, template_ligth
+from layout import get_page_layout, template_dark, template_ligth
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+app.title = 'KAMI Sales Analytics'
 cache = Cache(
     app.server, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': 'cache'}
 )
@@ -158,18 +155,18 @@ def update_table(page_current, page_size, sort_by, filter):
 @callback(
     Output('salesperson-kpi-ativo', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_kpis(sales_team):
+def update_kpi_active(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
-    ativo = go.Figure().add_trace(
-        go.Indicator(
-            title='Total de Ativos',
-            mode='number',
-            value=customer_df[customer_df['STATUS'] == 'ATIVO'].count()[
-                'cod_cliente'
-            ],
-        )
+    ativo = get_single_indicator(
+        title='Total de Ativos',
+        value=customer_df[customer_df['STATUS'] == 'ATIVO'].count()[
+            'cod_cliente'
+        ],
+        template=template,
     )
     return ativo
 
@@ -177,18 +174,18 @@ def update_kpis(sales_team):
 @callback(
     Output('salesperson-kpi-pre_inativo', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_kpi_pre_inactive(sales_team):
+def update_kpi_pre_inactive(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
-    pre_inativo = go.Figure().add_trace(
-        go.Indicator(
-            title='Total de Pré-inativos',
-            mode='number',
-            value=customer_df[customer_df['STATUS'] == 'PRE-INATIVO'].count()[
-                'cod_cliente'
-            ],
-        )
+    pre_inativo = get_single_indicator(
+        title='Total de Pré-inativos',
+        value=customer_df[customer_df['STATUS'] == 'PRE-INATIVO'].count()[
+            'cod_cliente'
+        ],
+        template=template,
     )
     return pre_inativo
 
@@ -196,38 +193,37 @@ def update_kpi_pre_inactive(sales_team):
 @callback(
     Output('salesperson-kpi-inativo', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_kpi_inctive(sales_team):
+def update_kpi_inctive(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
-    inativo = go.Figure().add_trace(
-        go.Indicator(
-            title='Total de Inativos',
-            mode='number',
-            value=customer_df[customer_df['STATUS'] == 'INATIVO'].count()[
-                'cod_cliente'
-            ],
-        )
+    inativo = get_single_indicator(
+        title='Total de Inativos',
+        value=customer_df[customer_df['STATUS'] == 'INATIVO'].count()[
+            'cod_cliente'
+        ],
+        template=template,
     )
-
     return inativo
 
 
 @callback(
     Output('salesperson-kpi-perdido', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_kpi_lost(sales_team):
+def update_kpi_lost(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
-    perdido = go.Figure().add_trace(
-        go.Indicator(
-            title='Total de Perdidos',
-            mode='number',
-            value=customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
-                'cod_cliente'
-            ],
-        )
+    perdido = get_single_indicator(
+        title='Total de Perdidos',
+        value=customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
+            'cod_cliente'
+        ],
+        template=template,
     )
     return perdido
 
@@ -235,60 +231,39 @@ def update_kpi_lost(sales_team):
 @callback(
     Output('salesperson-graph-ytd', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_graph_ytd(sales_team):
+def update_graph_ytd(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     dff = master_df.loc[mask]
-    master_ytd_df = (
-        dff.groupby(['nome_colaborador', 'equipe'])
-        .agg(YEAR_TO_DATE=('FAT. LÍQ. 2023 YTD', 'sum'))
-        .reset_index()
-    )
-    ytd = px.bar(
-        master_ytd_df, x='YEAR_TO_DATE', y='nome_colaborador', orientation='h'
-    )
+    ytd = get_ytd_graph(dff, 'FAT. LÍQ. 2023 YTD', template)
     return ytd
 
 
 @callback(
     Output('salesperson-graph-ytd-2023', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_graph_ytd_2023(sales_team):
+def update_graph_ytd_2023(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     dff = master_df.loc[mask]
-    master_ytd_df = (
-        dff.groupby(['nome_colaborador', 'equipe'])
-        .agg(ACUMULADO_2023=('ytd_2023', 'sum'))
-        .reset_index()
-    )
-    ytd_2023 = px.bar(
-        master_ytd_df,
-        x='ACUMULADO_2023',
-        y='nome_colaborador',
-        orientation='h',
-    )
+    ytd_2023 = get_ytd_graph(dff, 'ytd_2023', template)
     return ytd_2023
 
 
 @callback(
     Output('salesperson-graph-ytd-2022', 'figure'),
     Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
-def update_graph_ytd_2022(sales_team):
+def update_graph_ytd_2022(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     dff = master_df.loc[mask]
-    master_ytd_df = (
-        dff.groupby(['nome_colaborador', 'equipe'])
-        .agg(ACUMULADO_2022=('ytd_2022', 'sum'))
-        .reset_index()
-    )
-    ytd_2022 = px.bar(
-        master_ytd_df,
-        x='ACUMULADO_2022',
-        y='nome_colaborador',
-        orientation='h',
-    )
+    ytd_2022 = get_ytd_graph(dff, 'ytd_2022', template)
     return ytd_2022
 
 
