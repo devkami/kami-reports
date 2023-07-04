@@ -1,21 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from datetime import date, datetime
 
-import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-from constant import (
-    CURRENT_MONTH,
-    CURRENT_YEAR,
-    MONTHS_PTBR_ABBR,
-    SALE_NOPS,
-    STARTING_YEAR,
-)
-from dash import Input, dcc, html
-from dataframe import get_salesperson_opt_list, group_by_cols
-from numerize import numerize
+from dash import dcc, html
 
 app_logger = logging.getLogger('kami-dash')
 

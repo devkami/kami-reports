@@ -45,27 +45,11 @@ MONTHS_PTBR_ABBR = {
     11: 'NOV',
     12: 'DEZ',
 }
-WEEKDAYS_PTBR_ABBR = {
-    0: 'SEG',
-    1: 'TER',
-    2: 'QUA',
-    3: 'QUI',
-    4: 'SEX',
-    5: 'SAB',
-    6: 'DOM',
-}
+
 TAGS = ['_liquido', '_bruto', '_desconto', '_bonificado', '_enxoval']
 STARTING_YEAR = 2022
 CURRENT_MONTH = datetime.now().month
 CURRENT_YEAR = datetime.now().year
-CURRENT_DAY = datetime.now().day
-END_WEEK = datetime.now() - timedelta(days=datetime.today().weekday())
-START_WEEK = END_WEEK - timedelta(days=7)
-CURRENT_WEEKDAY = datetime.today().weekday()
-WEEK_YEAR_NUMBER = datetime.now().strftime('%V')
-CURRENT_WEEK_FOLDER = f'Semana-{WEEK_YEAR_NUMBER} ({START_WEEK.day}-{START_WEEK.month} a {END_WEEK.day}-{END_WEEK.month})'
-CURRENT_DAY_FOLDER = f'{CURRENT_DAY}-{WEEKDAYS_PTBR_ABBR[CURRENT_WEEKDAY]}'
-COMERCIAL_WEEK = [0, 1, 2, 3, 4]
 COLUMNS_NAMES_HEAD = [
     'cod_colaborador',
     'nome_colaborador',
@@ -208,32 +192,6 @@ DAILY_BILLINGS_SCRIPT = f'SELECT * FROM vw_daily_billings AS vdb \
     WHERE vdb.ano >= {STARTING_YEAR}'
 CUSTOMER_DETAILS_SCRIPT = f'SELECT * FROM vw_customer_details AS vcd WHERE vcd.ultimo_ano_ativo >= {STARTING_YEAR}'
 BILLINGS_DATETIME_COLS = [
-    'dt_implante_pedido',
-    'dt_entrega_comprometida',
-    'dt_faturamento',
-]
-ODERS_COLS_HEAD = [
-    'ano',
-    'mes',
-    'empresa_pedido',
-    'empresa_nota_fiscal',
-    'cod_cliente',
-    'cod_colaborador',
-    'nome_colaborador',
-    'cod_pedido',
-    'nr_ped_compra_cli',
-    'cod_situacao',
-    'desc_situacao',
-    'nop',
-    'cfop',
-    'cod_cond_pagto',
-    'cod_forma_pagto',
-    'forma_pgto',
-    'tb_preco',
-    'vl_total_pedido',
-    'desconto_pedido',
-    'valor_nota',
-    'total_bruto',
     'dt_implante_pedido',
     'dt_entrega_comprometida',
     'dt_faturamento',
