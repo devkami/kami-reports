@@ -1,0 +1,5 @@
+dados de Year to Date em % ao inves de valor absoluto;
+adicinoar a base (atiovs+inativos) e delta de percentual em relação a base em todos kpi's de churn;
+novo kpi: Média Trimestral (total de compras no periodo / por mes que comprou) periodo 3 meses;
+adicionar filtro por representante;
+total de inadimplência por vendedor (valor devido se status=inadimplente)
