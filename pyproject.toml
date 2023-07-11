@@ -26,6 +26,7 @@ dash-labs = "^1.2.0"
 numerize = "^0.12"
 flask-caching = "^2.0.2"
 unidecode = "^1.3.6"
+gunicorn = "^20.1.0"
 
 [build-system]
 requires = ["poetry-core"]
