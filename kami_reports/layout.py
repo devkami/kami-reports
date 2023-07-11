@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from datetime import datetime
-
 import dash_bootstrap_components as dbc
-import pkg_resources
-from constant import CURRENT_MONTH, CURRENT_YEAR, MONTHS_PTBR_ABBR, PAGE_SIZE
+from constant import CURRENT_MONTH, CURRENT_YEAR, MONTHS_PTBR_ABBR, PAGE_SIZE, APP_VERSION
 from dash import dash_table, dcc, html
 from dash_bootstrap_templates import ThemeSwitchAIO
 
@@ -426,7 +424,7 @@ footer_row = html.Footer(
                                     [
                                         html.P(
                                             [
-                                                f"version: {pkg_resources.get_distribution('kami-reports').version} - ",
+                                                f"version: {APP_VERSION} - ",
                                                 f'@ {datetime.now().year} Copyright: ',
                                                 html.A(
                                                     'KAMI CO.',

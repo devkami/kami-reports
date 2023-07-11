@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-
+from flask import Flask
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -19,8 +19,8 @@ from dataframe import (
 from flask_caching import Cache
 from kami_logging import benchmark_with, logging_with
 from layout import get_page_layout, template_dark, template_ligth
-
-app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
+server=Flask(__name__)
+app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = 'KAMI Sales Analytics'
 cache = Cache(
     app.server, config={'CACHE_TYPE': 'filesystem', 'CACHE_DIR': 'cache'}
