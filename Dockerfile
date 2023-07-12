@@ -9,4 +9,4 @@ RUN pip install -r requirements.txt
  
 COPY kami_reports/ ./
  
-CMD [ "gunicorn", "--workers=5", "--threads=1", "--preload", "-b 0.0.0.0:80", "app:server"]
+CMD [ "gunicorn", "--workers=5", "--threads=1", "--preload", "-b 0.0.0.0:8090", "app:server"]

@@ -1,4 +1,10 @@
-version: "3.7"
+version: "3.9"
+
+networks:
+  proxy:
+    external: true
+  backend:
+    external: false
 
 services:
   dash:
@@ -6,12 +12,14 @@ services:
       context: ./
     container_name : "${COMPOSE_PROJECT_NAME}_dashboard"
     hostname: "${COMPOSE_PROJECT_NAME}_dashboard"
-    restart: always
     ports:
-      - 5000:80
+      - "5000:8090"
     networks:
-      - network     
-
-networks:
-   network:
-     driver: bridge
+      - proxy
+      - backend
+    restart: always
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashkami.rule=Host(`dash.kamico.com.br`)
+      - traefik.http.routers.dashkami.tls.certresolver=myresolver
+      - traefik.port=80

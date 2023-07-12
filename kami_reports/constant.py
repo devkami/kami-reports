@@ -265,6 +265,7 @@ SALES_TEAMS = {
     3383: 'Merchandising',
     3387: 'Uso Próprio',
     3389: 'Amanda Bêtta',
+    3391: 'Maisa Ekermann',
     3395: 'Uso Próprio',
     3400: 'Herbert Marcondes',
     3405: 'Alexandre Nascimento',
