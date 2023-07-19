@@ -151,6 +151,28 @@ def update_table(page_current, page_size, sort_by, filter):
         page_current * page_size : (page_current + 1) * page_size
     ].to_dict('records')
 
+
+
+@callback(
+    Output('salesperson-inadimplentes', 'figure'),
+    Input('select-sales-team', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
+)
+def update_kpi_inadimplentes(sales_team, toggle):
+    template = template_ligth if toggle else template_dark
+    mask = get_filter_mask(master_df, 'equipe', sales_team)
+    customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
+    inadimplentes = get_single_indicator(
+        title='Inadimplentes',
+        value= customer_df[customer_df['dias_atraso'] > 30].count()[
+            'cod_cliente'
+        ]        ,
+        template=template,
+    )
+    return inadimplentes
+
+
+#-----------------------------------------
 @callback(
     Output('salesperson-churn-percent', 'figure'),
     Input('select-sales-team', 'value'),
@@ -161,8 +183,8 @@ def update_kpi_churn_base(sales_team, toggle):
     mask = get_filter_mask(master_df, 'equipe', sales_team)
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
     churn = get_single_indicator(
-        title='CHURN / BASE',
-        value= customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
+        title='CHURN / BASE em %',
+        value= round(customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
             'cod_cliente'
         ] / (customer_df[customer_df['STATUS'] == 'ATIVO'].count()[
             'cod_cliente'
@@ -173,11 +195,12 @@ def update_kpi_churn_base(sales_team, toggle):
             'cod_cliente'
         ] +customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
             'cod_cliente'
-        ]),
+        ]),2) * 100,
+        
         template=template,
     )
     return churn
-#-----------------------------------------
+
 
 @callback(
     Output('salesperson-kpi-ativo', 'figure'),

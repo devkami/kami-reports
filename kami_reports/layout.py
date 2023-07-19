@@ -109,6 +109,19 @@ def get_graph_tab(sales_teams_options):
                                                                         style=indicator_style,
                                                                         config=config_indicator,
                                                                         className='dbc',
+                                                                        id='salesperson-inadimplentes',
+                                                                    ),
+                                                                ],
+                                                                sm=12,
+                                                                md=3,
+                                                            ),
+                                                            
+                                                            dbc.Col(
+                                                                [
+                                                                    dcc.Graph(
+                                                                        style=indicator_style,
+                                                                        config=config_indicator,
+                                                                        className='dbc',
                                                                         id='salesperson-churn-percent',
                                                                     ),
                                                                 ],
