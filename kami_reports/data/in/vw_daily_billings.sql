@@ -24,8 +24,8 @@ CREATE OR REPLACE VIEW vw_daily_billings AS SELECT
 ,IFNULL(CONVERT(grupo_produto_pai.desc_abrev, CHAR), '0') AS desc_grupo_pai
 ,IFNULL(CONVERT(marca.cod_marca, CHAR), '0') AS cod_marca
 ,IFNULL(CONVERT(marca.desc_abrev, CHAR), '0') AS desc_marca
-,IFNULL(CONVERT(produto_empresa.vl_custo_total DECIMAL(10,2)), 0.0) AS custo_total
-,IFNULL(CONVERT(IFNULL(produto_empresa.vl_custo_kami,(SELECT cpi.preco_unit FROM cd_preco_item AS cpi WHERE cpi.cod_produto = pedido_item.cod_produto AND cpi.tb_preco = 'TabTbCusto')) DECIMAL(10,2)), 0.0) AS custo_kami
+,IFNULL(CONVERT(produto_empresa.vl_custo_total, DECIMAL(10,2)), 0.0) AS custo_total
+,IFNULL(CONVERT(IFNULL(produto_empresa.vl_custo_kami,(SELECT cpi.preco_unit FROM cd_preco_item AS cpi WHERE cpi.cod_produto = pedido_item.cod_produto AND cpi.tb_preco = 'TabTbCusto')), DECIMAL(10,2)), 0.0) AS custo_kami
 ,IFNULL(CONVERT(pedido_item.tb_preco, CHAR), '0') AS tb_preco
 ,IFNULL(CONVERT(pedido_item.qtd, UNSIGNED), 0) AS qtd
 ,IFNULL(CONVERT(pedido_item.preco_venda, DECIMAL(10,2)), 0.0) AS preco_unit_original
@@ -55,5 +55,5 @@ LEFT JOIN cd_marca AS marca ON (marca.cod_marca = produto.cod_marca)
 LEFT JOIN cd_grupo_item AS grupo_item ON (grupo_item.cod_produto = pedido_item.cod_produto)
 LEFT JOIN cd_grupo_produto AS grupo_produto ON (grupo_produto.cod_grupo_produto = grupo_item.cod_grupo_produto)
 LEFT JOIN cd_grupo_produto AS grupo_produto_pai ON (grupo_produto_pai.cod_grupo_produto = grupo_produto.cod_grupo_pai)
-WHERE pedido.cod_empresa IN (1,2,3,4,5,6,9,10,11)
+WHERE pedido.cod_empresa IN (1,2,3,4,5,6,9,10,11,12,13,14,15,16)
 GROUP BY ano, mes, pedido.cod_pedido, pedido.cod_cliente, pedido_item.cod_produto;

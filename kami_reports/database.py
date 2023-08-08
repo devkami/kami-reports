@@ -14,6 +14,9 @@ from constant import (
     DAILY_BILLINGS_SCRIPT,
     MONTHLY_BILLINGS_NUM_COLS,
     MONTHLY_BILLINGS_SCRIPT,
+    FUTURE_BILLS_SCRIPT,
+    FUTURE_BILLS_DATETIME_COLS,
+    FUTURE_BILLS_NUM_COLS
 )
 from dotenv import load_dotenv
 from filemanager import get_file_list_from
@@ -53,7 +56,7 @@ def execute_queries(sql_files):
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
 def update_database_views():
-    views_script = get_file_list_from('kami_reports/data/in')
+    views_script = get_file_list_from('data/in')
     execute_queries(views_script)
 
 
@@ -104,4 +107,13 @@ def get_vw_customer_details() -> pd.DataFrame:
         CUSTOMER_DETAILS_SCRIPT,
         date_cols=CUSTOMER_DETAILS_DATETIME_COLS,
         cols_types=CUSTOMER_DETAILS_NUM_COLS,
+    )
+
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def get_vw_future_bills() -> pd.DataFrame:
+    return get_dataframe_from_sql_query(
+        FUTURE_BILLS_SCRIPT,
+        date_cols=FUTURE_BILLS_DATETIME_COLS,
+        cols_types=FUTURE_BILLS_NUM_COLS,
     )
