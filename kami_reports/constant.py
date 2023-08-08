@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 
 import numpy as np
-APP_VERSION = "0.3.2"
+APP_VERSION = "0.3.2b"
 TIMEOUT = 3600
 PAGE_SIZE = 100
 OPERATORS = [
