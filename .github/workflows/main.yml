@@ -2,13 +2,10 @@ name: Build and Publish Docker Image of Kami-dashboard
 on:
   push:
     branches:
-      - 'kami_dash'
-    tags:
-      - 'v[0-9]+.[0-9]+.[0-9]+'
+      ['kami_dash']
   pull_request:
     branches:
-      - 'kami_dash'
-
+      ['kami_dash']
 jobs:
   build:
     name: Build & Push kami-dashboard docker image
