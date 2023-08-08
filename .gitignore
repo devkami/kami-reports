@@ -165,3 +165,6 @@ data/out/
 *.csv
 
 cache/
+service_account_credentials.json
+.vscode/
+kami_reports/*.ipynb
