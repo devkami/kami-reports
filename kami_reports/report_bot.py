@@ -20,6 +20,7 @@ from dataframe import (
     get_monthly_billings_df,
     get_sales_bi_df,
     get_sales_lines_df,
+    get_future_bills_df,
     slice_sales_df_by_team,
 )
 from dotenv import load_dotenv
@@ -28,7 +29,7 @@ from kami_gdrive import create_folder, gdrive_logger, upload_files_to
 from kami_logging import benchmark_with, logging_with
 from messages import send_messages_by_group
 from unidecode import unidecode
-
+from database import update_database_views
 report_bot_logger = logging.getLogger('report_bot')
 report_bot_logger.info('Loading Enviroment Variables')
 load_dotenv()
@@ -162,7 +163,7 @@ def generate_overdue_report(customer_df, filename):
 @logging_with(report_bot_logger)
 def generate_future_bills_report(future_bills_df, filename):
     future_bills_df.to_excel(
-        f'data/out/contas_a_receber{filename}.xlsx',
+        f'data/out/contas_a_receber_{filename}.xlsx',
         sheet_name='PAGAMENTOS FUTUROS',
         index=False,
     )
@@ -216,18 +217,7 @@ def deliver_master_reports(team_sales_bi_dfs, current_folders_id):
 @logging_with(report_bot_logger)
 def deliver_comercial_reports(current_folders_id):
     products_df = get_sales_lines_df()
-    sales_bi_df = get_sales_bi_df(products_df)
-    """ generate_products_report(sales_bi_df)
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['products'],
-    )
-    delete_old_files('data/out')
-    generate_master_report(sales_bi_df)
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['master'],
-    ) """
+    sales_bi_df = get_sales_bi_df(products_df)    
     delete_old_files('data/out')
     team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df)
     deliver_products_reports(team_sales_bi_dfs, current_folders_id)
@@ -241,7 +231,9 @@ def deliver_comercial_reports(current_folders_id):
 @logging_with(report_bot_logger)
 def generate_account_report(filename):
     customer_df = get_customer_details_df()
-    generate_overdue_report(customer_df, filename)
+    future_bills_df = get_future_bills_df()
+    generate_overdue_report(customer_df, filename)    
+    generate_future_bills_report(future_bills_df, filename)
 
 
 @benchmark_with(report_bot_logger)
@@ -294,10 +286,9 @@ def main():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    current_folders_id = create_gdrive_folders()
     delete_old_files('data/out')
-    deliver_monthly_reports(current_folders_id)
-
+    current_folders_id = create_gdrive_folders()
+    deliver_comercial_reports(current_folders_id)
 
 if __name__ == '__main__':
-    main()
+    test()

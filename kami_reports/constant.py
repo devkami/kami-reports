@@ -212,6 +212,9 @@ BILLINGS_DATETIME_COLS = [
     'dt_entrega_comprometida',
     'dt_faturamento',
 ]
+FUTURE_BILLS_SCRIPT = 'SELECT * FROM vw_future_bills'
+FUTURE_BILLS_DATETIME_COLS = ['dt_vencimento']
+FUTURE_BILLS_NUM_COLS = {'cod_empresa': np.int64, 'total_a_receber': np.float64}
 ODERS_COLS_HEAD = [
     'ano',
     'mes',
@@ -368,3 +371,4 @@ SALES_TEAMS = {
     9998: 'Herbert Marcondes',
     9999: 'Uso Próprio',
 }
+APP_VERSION = '0.2.0'
