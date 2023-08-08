@@ -323,7 +323,7 @@ def update_graph_ytd_2022(sales_team, toggle):
     prevent_initial_call=True,
 )
 def download_master_df(n_clicks):
-    return dcc.send_data_frame(master_df.to_csv, 'mestre_geral.csv')
+    return dcc.send_data_frame(master_df.to_excel, 'mestre_geral.xlsx')
 
 
 @callback(
@@ -332,7 +332,7 @@ def download_master_df(n_clicks):
     prevent_initial_call=True,
 )
 def download_products_df(n_clicks):
-    return dcc.send_data_frame(sales_bi_df.to_csv, 'produtos_geral.csv')
+    return dcc.send_data_frame(sales_bi_df.to_excel, 'produtos_geral.xlsx')
 
 
 if __name__ == '__main__':
