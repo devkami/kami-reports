@@ -3,7 +3,7 @@
 from datetime import datetime, timedelta
 
 import numpy as np
-
+APP_VERSION = "0.3.2"
 TIMEOUT = 3600
 PAGE_SIZE = 100
 OPERATORS = [
@@ -242,8 +242,7 @@ ODERS_COLS_HEAD = [
     'dt_faturamento',
 ]
 SALES_TEAMS = {
-    1: 'Tiago Maruyama',
-    107: 'Carlos Benia',
+    1: 'Tiago Maruyama',   
     112: 'Tiago Maruyama',
     117: 'Tiago Maruyama',
     120: 'Carlos Benia',
@@ -259,12 +258,9 @@ SALES_TEAMS = {
     154: 'Herbert Marcondes',
     158: 'Rogerio Casado',
     16: 'Uso Próprio',
-    160: 'Carlos Benia',
     161: 'Adriana David',
     17: 'Adriana David',
-    172: 'Carlos Benia',
     18: 'Carlos Gouveia',
-    21: 'Carlos Benia',
     211: 'Maisa Ekermann',
     215: 'Alexandre Nascimento',
     217: 'Rogerio Casado',
@@ -310,6 +306,7 @@ SALES_TEAMS = {
     3383: 'Merchandising',
     3387: 'Uso Próprio',
     3389: 'Amanda Bêtta',
+    3391: 'Maisa Ekermann',
     3395: 'Uso Próprio',
     3400: 'Herbert Marcondes',
     3405: 'Alexandre Nascimento',
@@ -325,6 +322,8 @@ SALES_TEAMS = {
     3424: 'Sávio Almeida',
     3425: 'Sávio Almeida',
     3436: 'Uso Próprio',
+    3450: 'Carlos Benia',
+    3451: 'Carlos Benia',
     349: 'Lauegis Miranda',
     35: 'Alexandre Nascimento',
     350: 'Lauegis Miranda',
@@ -371,4 +370,3 @@ SALES_TEAMS = {
     9998: 'Herbert Marcondes',
     9999: 'Uso Próprio',
 }
-APP_VERSION = '0.2.0'
