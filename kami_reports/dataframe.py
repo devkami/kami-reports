@@ -12,7 +12,6 @@ from constant import (
     MONTHS_PTBR,
     MONTHS_PTBR_ABBR,
     SALE_NOPS,
-    SALES_TEAMS,
     STARTING_YEAR,
     SUBSIDIZED_NOPS,
     TAGS,
@@ -31,18 +30,10 @@ from numpy import dtype
 dataframe = logging.getLogger('dataframe')
 
 
-def get_sales_team(seller_id):
-    sellers = SALES_TEAMS.keys()
-    return SALES_TEAMS[seller_id] if seller_id in sellers else 'sem equipe'
-
-
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_sales_lines_df():
     sales_lines_df = get_vw_daily_billings()
-    sales_lines_df['equipe'] = sales_lines_df['cod_colaborador'].map(
-        get_sales_team
-    )
     return sales_lines_df
 
 
@@ -57,9 +48,6 @@ def get_customer_details_df():
 @logging_with(dataframe)
 def get_monthly_billings_df():
     monthly_billings = get_vw_monthly_billings()
-    monthly_billings['equipe'] = monthly_billings['cod_colaborador'].map(
-        get_sales_team
-    )
     return monthly_billings
 
 @benchmark_with(dataframe)
