@@ -7,6 +7,8 @@ CREATE OR REPLACE VIEW vw_daily_billings AS SELECT
 ,IFNULL(CONVERT(pedido.cod_cliente, CHAR), '0') AS cod_cliente
 ,IFNULL(CONVERT(pedido.cod_colaborador, CHAR), '0') AS cod_colaborador
 ,IFNULL(CONVERT(colaborador.nome_colaborador, CHAR), '0') AS nome_colaborador
+,IFNULL(CONVERT(grupo_colaborador.cod_grupo_venda, CHAR), '0') AS cod_equipe
+,IFNULL(CONVERT(grupo_venda.nome_grupo, CHAR), '0') AS equipe
 ,IFNULL(CONVERT(pedido.cod_pedido, CHAR), '0') AS cod_pedido
 ,IFNULL(CONVERT(IFNULL(pedido.nr_ped_compra_cli, pedido.cod_pedido_pda), CHAR), '0') AS nr_ped_compra_cli
 ,IFNULL(CONVERT(pedido.situacao, CHAR), '0') AS cod_situacao
@@ -55,5 +57,7 @@ LEFT JOIN cd_marca AS marca ON (marca.cod_marca = produto.cod_marca)
 LEFT JOIN cd_grupo_item AS grupo_item ON (grupo_item.cod_produto = pedido_item.cod_produto)
 LEFT JOIN cd_grupo_produto AS grupo_produto ON (grupo_produto.cod_grupo_produto = grupo_item.cod_grupo_produto)
 LEFT JOIN cd_grupo_produto AS grupo_produto_pai ON (grupo_produto_pai.cod_grupo_produto = grupo_produto.cod_grupo_pai)
+LEFT JOIN vd_grupo_colaborador AS grupo_colaborador ON (grupo_colaborador.cod_colaborador = pedido.cod_colaborador)
+LEFT JOIN vd_grupo AS grupo_venda ON (grupo_venda.cod_grupo_venda = grupo_colaborador.cod_grupo_venda)
 WHERE pedido.cod_empresa IN (1,2,3,4,5,6,9,10,11,12,13,14,15,16)
 GROUP BY ano, mes, pedido.cod_pedido, pedido.cod_cliente, pedido_item.cod_produto;
