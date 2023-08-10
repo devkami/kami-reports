@@ -12,7 +12,6 @@ from constant import (
     MONTHS_PTBR,
     MONTHS_PTBR_ABBR,
     SALE_NOPS,
-    SALES_TEAMS,
     STARTING_YEAR,
     SUBSIDIZED_NOPS,
     TAGS,
@@ -23,6 +22,7 @@ from database import (
     get_vw_customer_details,
     get_vw_daily_billings,
     get_vw_monthly_billings,
+    get_vw_future_bills,
 )
 from kami_logging import benchmark_with, logging_with
 from numpy import dtype
@@ -30,18 +30,10 @@ from numpy import dtype
 dataframe = logging.getLogger('dataframe')
 
 
-def get_sales_team(seller_id):
-    sellers = SALES_TEAMS.keys()
-    return SALES_TEAMS[seller_id] if seller_id in sellers else 'sem equipe'
-
-
 @benchmark_with(dataframe)
 @logging_with(dataframe)
 def get_sales_lines_df():
     sales_lines_df = get_vw_daily_billings()
-    sales_lines_df['equipe'] = sales_lines_df['cod_colaborador'].map(
-        get_sales_team
-    )
     return sales_lines_df
 
 
@@ -56,11 +48,13 @@ def get_customer_details_df():
 @logging_with(dataframe)
 def get_monthly_billings_df():
     monthly_billings = get_vw_monthly_billings()
-    monthly_billings['equipe'] = monthly_billings['cod_colaborador'].map(
-        get_sales_team
-    )
     return monthly_billings
 
+@benchmark_with(dataframe)
+@logging_with(dataframe)
+def get_future_bills_df():
+    future_bills = get_vw_future_bills()
+    return future_bills
 
 def group_by_cols(df, group_cols) -> pd.DataFrame:
     df = df.sort_values(['ano', 'mes'], ascending=False)
@@ -200,10 +194,11 @@ def sum_sales_by_costumer_and_period(orders_df, start_date, end_date, freq):
 def build_master_df(sales_bi_df) -> pd.DataFrame:
     master_df = pd.DataFrame()
     orders_df = build_orders_df(sales_bi_df)
-    head_df = group_by_cols(
-        sales_bi_df, group_cols=['cod_cliente', 'cod_marca']
-    )[COLUMNS_NAMES_HEAD]
     index_cols = ['cod_cliente', 'cod_marca']
+    head_df = group_by_cols(
+        sales_bi_df, group_cols=index_cols
+    )[COLUMNS_NAMES_HEAD]
+    
     trousseau_df = sum_trousseau_by_costumer(orders_df)
     subsidized_df = sum_subsidized_by_costumer(orders_df)
     discount_df = sum_discount_by_costumer(orders_df)
