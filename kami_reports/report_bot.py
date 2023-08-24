@@ -29,7 +29,7 @@ from kami_gdrive import create_folder, gdrive_logger, upload_files_to
 from kami_logging import benchmark_with, logging_with
 from messages import send_messages_by_group
 from unidecode import unidecode
-from database import update_database_views
+from database import update_database_views, get_dataframe_from_sql_table
 report_bot_logger = logging.getLogger('report_bot')
 report_bot_logger.info('Loading Enviroment Variables')
 load_dotenv()
@@ -220,7 +220,7 @@ def deliver_comercial_reports(current_folders_id):
     sales_bi_df = get_sales_bi_df(products_df)    
     delete_old_files('data/out')
     team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df)
-    deliver_products_reports(team_sales_bi_dfs, current_folders_id)
+    deliver_products_reports(products_df, current_folders_id)
     deliver_master_reports(team_sales_bi_dfs, current_folders_id)
     send_messages_by_group(
         gdrive_folder_id=current_folders_id['comercial'], group='comercial'
@@ -254,7 +254,10 @@ def deliver_account_reports(current_folders_id):
 @logging_with(report_bot_logger)
 def deliver_monthly_reports(current_folders_id):
     delete_old_files('data/out')
+    df = get_dataframe_from_sql_table("cd_empresa")
+    df_empresa = df[['cod_empresa',"razao_social"]]
     montlhy_df = get_monthly_billings_df()
+    montlhy_df = pd.merge(montlhy_df, df_empresa, how='left')
     generate_montlhy_report(montlhy_df, 'geral')
     upload_files_to(
         source='data/out',
@@ -262,7 +265,7 @@ def deliver_monthly_reports(current_folders_id):
     )
     delete_old_files('data/out')
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['month'], group='board'
+        gdrive_folder_id=current_folders_id['month'], group='test'
     )
 
 
@@ -286,9 +289,8 @@ def main():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    delete_old_files('data/out')
     current_folders_id = create_gdrive_folders()
-    deliver_comercial_reports(current_folders_id)
-
+    delete_old_files('data/out')
+    deliver_monthly_reports(current_folders_id)
 if __name__ == '__main__':
     test()
