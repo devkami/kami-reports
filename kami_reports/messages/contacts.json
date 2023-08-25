@@ -13,9 +13,9 @@
     },
     {
         "name": "Gabi",
-        "phone": "+551141875114",
+        "phone": "+5511991380230",
         "email": "gabi@kamico.com.br",
-        "groups": ["comercial", "geral"]
+        "groups": ["comercial", "geral", "beexp_manager"]
     },
     {
         "name": "Rogerio Casado",
@@ -159,7 +159,7 @@
         "name": "Maicon de Menezes Oliveira",
         "phone": "+5521983144824",
         "email": "maicon@kamico.com.br",
-        "groups": ["board", "account", "comercial", "geral", "test"]
+        "groups": ["board", "account", "comercial", "geral", "test", "beexp_manager"]
     },
     {
         "name": "Alexandre Andrade Nascimento",

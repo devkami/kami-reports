@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from os import getenv, system
+from os import getenv, system, path
 from typing import Dict, List
 
 import pandas as pd
@@ -60,17 +60,43 @@ def update_database_views():
     execute_queries(views_script)
 
 
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
 def get_dataframe_from_sql_query(
     sql_script: str, date_cols: List[str] = None, cols_types: Dict = None
 ) -> pd.DataFrame:
     sql_engine = create_engine(connection_url, pool_recycle=3600)
-    sql_engine.connect()
+    sql_engine.connect()  
     df = pd.read_sql_query(
         str(sql_script), sql_engine, parse_dates=date_cols, dtype=cols_types
     )
     return pd.DataFrame(df)
 
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def get_dataframe_from_sql_file(
+    sql_file: str, date_cols: List[str] = None, cols_types: Dict = None
+) -> pd.DataFrame:
+    query = open(sql_file, 'r')
+    sql_engine = create_engine(connection_url, pool_recycle=3600)
+    sql_engine.connect()  
+    df = pd.read_sql(
+        query.read(), sql_engine, parse_dates=date_cols, dtype=cols_types
+    )
+    return pd.DataFrame(df)
 
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
+def get_dataframe_from_sql(
+    sql_query: str, date_cols: List[str] = None, cols_types: Dict = None
+) -> pd.DataFrame:
+    if path.exists(sql_query):
+        return get_dataframe_from_sql_file(sql_query, date_cols, cols_types)
+    return get_dataframe_from_sql_query(sql_query, date_cols, cols_types)
+
+
+@benchmark_with(db_connector_logger)
+@logging_with(db_connector_logger)
 def get_dataframe_from_sql_table(
     tablename: str, date_cols: List[str] = None
 ) -> pd.DataFrame:

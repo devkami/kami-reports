@@ -240,3 +240,24 @@ ODERS_COLS_HEAD = [
     'dt_entrega_comprometida',
     'dt_faturamento',
 ]
+ORDER_ITEM_DATE_COLS = [
+    'data_entrega',
+    'dt_entrega',
+    'dt_implant',
+    'dt_impressao_etiqueta',
+    'dt_pre_separacao',
+    'dt_prev_treinamento',
+    'dt_prevista',
+    'dt_reserva_estoque',
+    'dt_retorno'
+]
+BEEXP_PRODUCTS = (
+    '13711-13',
+    '13711-16',
+    '13711-17',
+    '13711-18',
+    'BR13711-13',
+    'BR13711-16',
+    'BR13711-17',
+    'BR13711-18',
+)
