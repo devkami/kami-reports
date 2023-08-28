@@ -21,7 +21,7 @@ from constant import (
 from database import (
     get_vw_customer_details,
     get_vw_daily_billings,
-    get_vw_monthly_billings,
+    get_vw_board_billings,
     get_vw_future_bills,
 )
 from kami_logging import benchmark_with, logging_with
@@ -46,9 +46,9 @@ def get_customer_details_df():
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)
-def get_monthly_billings_df():
-    monthly_billings = get_vw_monthly_billings()
-    return monthly_billings
+def get_board_billings_df():
+    board_billings = get_vw_board_billings()
+    return board_billings
 
 @benchmark_with(dataframe)
 @logging_with(dataframe)

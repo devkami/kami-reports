@@ -1,0 +1,588 @@
+[
+    {
+        "uno_id":21,
+        "name":"Cleber Ricardo Pinto Oliveira",
+        "phone":"+5551985457594",
+        "email":"cleberoliveirars2020@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":49,
+        "name":"Luana Costa",
+        "phone":"+5511987990861",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":59,
+        "name":"Nikoly Pitanga",
+        "phone":"+5511982394775",
+        "email":"comercial03@kamicosmeticos.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":98,
+        "name":"LEANDRO FERNANDES GOMES",
+        "phone":"+5511963828181",
+        "email":"leandrofgs@yahoo.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":105,
+        "name":"WILTON AMERICO BRUNO",
+        "phone":"+5511991155891",
+        "email":"wbruno_10@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":107,
+        "name":"Anderson Ferreira Gobi",
+        "phone":"+5554981394046",
+        "email":"comercial@kamicosmeticos.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":110,
+        "name":"Ellen Gleizzy Santos de Freitas",
+        "phone":"+5511996908362",
+        "email":"ellen@3mko.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":154,
+        "name":"VINICIUS VALERIANO",
+        "phone":"+5511953860011",
+        "email":"comercial@kamicosmeticos.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":155,
+        "name":"Marcelo Toledo Piza Rezende",
+        "phone":"+5511988959843",
+        "email":"marcelotpjc@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":156,
+        "name":"Jonathan Smith França da Conceição",
+        "phone":"+5513988076619",
+        "email":"jonathansfc1990@icloud.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":216,
+        "name":"Israell Ferreira de Souza",
+        "phone":"+5511983186698",
+        "email":"vinicius.valerianoalves@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":303,
+        "name":"Carlos Eduardo Bezerra Maciel ( RJ )",
+        "phone":"+5521996131012",
+        "email":"cebmaciel@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":306,
+        "name":"KamiRJ",
+        "phone":"+5521996131012",
+        "email":"email@email.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":307,
+        "name":"Geraldo Moreira",
+        "phone":"+5521997457022",
+        "email":"email@email.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":317,
+        "name":"PATRICK COSTA AMARAL (RJ)",
+        "phone":"+5521988214199",
+        "email":"patrickcosta_j@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":323,
+        "name":"GABRIEL CORREA",
+        "phone":"+5521965002597",
+        "email":"bielcorrea2018@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":327,
+        "name":"Maércio Makoto Manabe",
+        "phone":"+5567981122705",
+        "email":"makoto@xzen.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":328,
+        "name":"Edilson Aparecido M. dos Santos",
+        "phone":"+5511986205772",
+        "email":"comercial01@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":331,
+        "name":"Maria Angélica Oliveira Santos Vasconcelos",
+        "phone":"+55351939211798",
+        "email":"angelica_vasconcelos@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":332,
+        "name":"Márcia Cristina Pereira Brasil",
+        "phone":"+55351911044705",
+        "email":"marcia.brasil@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":333,
+        "name":"Patricia Xavier Soares",
+        "phone":"+55351915668114",
+        "email":"patricia.soares@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":334,
+        "name":"EDILENE ALVES DOS SANTOS TORRES",
+        "phone":"+55351961049090",
+        "email":"edilenealves.torres@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":335,
+        "name":"ANA MARIA SILVA ALMEIDA",
+        "phone":"+55351913919028",
+        "email":"anamaria.almeida@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":336,
+        "name":"CÉSAR AUGUSTO DA SILVA",
+        "phone":"+55351961049090",
+        "email":"cesar.silva@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":337,
+        "name":"ALEXSANDRO SOARES VIANA",
+        "phone":"+55351912789810",
+        "email":"alexsandro.viana@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":338,
+        "name":"Angela de Almeida Passos Xavier",
+        "phone":"+55351910651547",
+        "email":"angela.almeida@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":339,
+        "name":"RAFAEL GONÇALVES THOMÉ",
+        "phone":"+55351913607379",
+        "email":"rafael.thome@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":340,
+        "name":"BRUNO SERRA",
+        "phone":"+55351916358111",
+        "email":"bruno.serra@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":341,
+        "name":"Anderson Viana Borges",
+        "phone":"+55351968594895",
+        "email":"anderson.borges@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":342,
+        "name":"Pollyana Porto da Silva",
+        "phone":"+55351912777333",
+        "email":"pollyana.silva@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":343,
+        "name":"PAULA PAULINO",
+        "phone":"+55351910062690",
+        "email":"paula.paulino@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":344,
+        "name":"CARLOS MAGNO BATISTA MAGALHAES",
+        "phone":"+55351933254860",
+        "email":"carlos.magno@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":350,
+        "name":"Lindssy Ester Educadora",
+        "phone":"+5516974097175",
+        "email":"everton_lindssy@yahoo.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":382,
+        "name":"Luis Carlos Bezerra de Carvalho ",
+        "phone":"+5511982863892",
+        "email":"lcarvalho351@yahoo.com ",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":385,
+        "name":"Alexandre Andrade Nascimento ",
+        "phone":"+5514988052125",
+        "email":"apdistribuidorasp@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":388,
+        "name":"Carlo Alberto Cianci",
+        "phone":"+5511964886313",
+        "email":"c.cianci@uol.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":393,
+        "name":"Maicon Menezes",
+        "phone":"+5521983144824",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":396,
+        "name":"Davidson Alexo da Silva ",
+        "phone":"+5521982012949",
+        "email":"log@rm7emp.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":397,
+        "name":"Janaina Santos ",
+        "phone":"+5521998509629",
+        "email":"comercial01@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3340,
+        "name":"Juliana Rangel Agra",
+        "phone":"+5511976870958",
+        "email":"comercial01@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3349,
+        "name":"Marcos Antonio de Oliveira",
+        "phone":"+5511997034322",
+        "email":"marcosde.oliveira@uol.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3361,
+        "name":"Micheli Marinho da Silva ",
+        "phone":"+5511983707006",
+        "email":"michelimarinho1996@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3362,
+        "name":"João Carlos Garcia Gouveia ",
+        "phone":"+5513974047224",
+        "email":"joao_cosmeticos@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3363,
+        "name":"Jessica Barraqui de Souza ",
+        "phone":"+5521969851152",
+        "email":"jessica@gruposuprir.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3364,
+        "name":"Ingrid Aparecida de Carvalho",
+        "phone":"+5511997954939",
+        "email":"ingrid.care12@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3365,
+        "name":"Bruna Almeida Penteado",
+        "phone":"+5511996442283",
+        "email":"bruna.penteado@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3369,
+        "name":"Marcelo Rizieri Brunelli",
+        "phone":"+5511913179316",
+        "email":"marcelo.brunelli@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3370,
+        "name":"William Roberto Pinto",
+        "phone":"+5514996610242",
+        "email":"wrp1286@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3374,
+        "name":"Maria Teresa Ferreira ",
+        "phone":"+5515997890454",
+        "email":"mariateresa_ferreira@yahoo.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3375,
+        "name":"Marcelo Mancini",
+        "phone":"+5518997417445",
+        "email":"familiamancini@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3376,
+        "name":"Michele Dionísio",
+        "phone":"+5516981265726",
+        "email":"mi.dionizio@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3385,
+        "name":"Daniel Cavalcante ",
+        "phone":"+5511980712810",
+        "email":"daniel@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3389,
+        "name":"Amanda Bêtta ",
+        "phone":"+5521988325402",
+        "email":"comercial@gruposuprir.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3390,
+        "name":"Alessandro de Almeida Pupim",
+        "phone":"+5521969149449",
+        "email":"pupim@gruposuprir.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3391,
+        "name":"Emanuelle Lobão Cascaez",
+        "phone":"+5521990363585",
+        "email":"cascaezsuprir@gmail.com ",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3394,
+        "name":"Guilherme Fagundes Azevedo ",
+        "phone":"+5511959594247",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3398,
+        "name":"Rosana Nogueira De Carvalho",
+        "phone":"+5517996640902",
+        "email":"rosacosmeticosprof@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3399,
+        "name":"Monica Binkosk",
+        "phone":"+5517996060029",
+        "email":"monica.binkosk@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3401,
+        "name":"João Correa",
+        "phone":"+5521996042511",
+        "email":"jpbarbosac@outlook.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3402,
+        "name":"Davidson Aleixo",
+        "phone":"+5521982012949",
+        "email":"log@rm7emp.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3403,
+        "name":"Gustavo do Carmo Lima",
+        "phone":"+5511949350118",
+        "email":"gustavo@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3405,
+        "name":"Murilo Fernandes Garcia",
+        "phone":"+5519971641035",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3406,
+        "name":"Jeferson Luiz Primo",
+        "phone":"+5511978397157",
+        "email":"jlpvendas20@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3407,
+        "name":"Michele Cristina Rasquinho",
+        "phone":"+5511976252182",
+        "email":"mrasquinho@hotmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3408,
+        "name":"Moyses de Freitas Barbosa Junior",
+        "phone":"+5511967432650",
+        "email":"juninhonazn@hotmail.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3409,
+        "name":"TIAGO PENNA",
+        "phone":"+5573981168228",
+        "email":"tiagopdantas@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3410,
+        "name":"SÁVIO ALMEIDA",
+        "phone":"+5512996054540",
+        "email":"savio.almeida@icloud.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3412,
+        "name":"Luan Costa Amaral ( RJ )",
+        "phone":"+5521988210210",
+        "email":" lunique61@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3438,
+        "name":"Kevellyn Kauany Trancoso Gonçalves",
+        "phone":"+5541992005879",
+        "email":"kevellyn@3mko.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3440,
+        "name":"Otavio Domingos",
+        "phone":"+5517997875272",
+        "email":"otavio@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3441,
+        "name":"Allan Gonçalves Baggio ",
+        "phone":"+5541991115841",
+        "email":" allan@3mko.com.br ",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3443,
+        "name":"Patrícia Freire Cabral ",
+        "phone":"+5511917085634",
+        "email":"patricia@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3445,
+        "name":"Mateus Valeriote",
+        "phone":"+5511949391997",
+        "email":"mateus@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3447,
+        "name":"Paula Cristina da Silva Pereira",
+        "phone":"+5511961881370",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3448,
+        "name":"Bárbara araújo teixeira ",
+        "phone":"+5511954377603",
+        "email":"araujobarbara652@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3449,
+        "name":"Marcia Borges Pessoa ",
+        "phone":"+5519984275134",
+        "email":"marciapessoaprofissional@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3452,
+        "name":"Maria Madalena do Nascimento",
+        "phone":"+5515974064943",
+        "email":" madalena_mb@icloud.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3456,
+        "name":"Admin",
+        "phone":"+5511949391997",
+        "email":null,
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3460,
+        "name":"Alexandre Santana de oliveira ( técnico )",
+        "phone":"+5511978746948",
+        "email":"comercial01@kamico.com.br",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3461,
+        "name":"Ricardo Garcia de Azevedo",
+        "phone":"+5511950933984",
+        "email":"ricardogarciacontato@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":313,
+        "name":"Laerte Caldas Freitas",
+        "phone":"+5521994229501",
+        "email":"laerte.net@gmail.com",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":345,
+        "name":"ANA RAQUEL DIAS BELO BARROS",
+        "phone":"+55351924399928",
+        "email":"cliente@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":346,
+        "name":"ADÉLIA CARLA CORGAS MACHADO ALVES",
+        "phone":"+55351925918213",
+        "email":"geral@kamico.pt",
+        "groups":["beexp_seller"]
+    },
+    {
+        "uno_id":3397,
+        "name":"Juliana Camargo Matos",
+        "phone":"+5511937425336",
+        "email":"juliana.matos@kamico.com.br",
+        "groups":["beexp_seller"]}]

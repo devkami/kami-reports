@@ -17,7 +17,7 @@ from constant import (
 from dataframe import (
     build_master_df,
     get_customer_details_df,
-    get_monthly_billings_df,
+    get_board_billings_df,
     get_sales_bi_df,
     get_sales_lines_df,
     get_future_bills_df,
@@ -121,10 +121,10 @@ def generate_master_report(sales_bi_df, filename='geral'):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_montlhy_report(montlhy_df, filename):
+def generate_board_report(board_df, filename):
     delete_old_files('data/out')
-    montlhy_df.to_excel(
-        f'data/out/faturamento_mensal_{filename}.xlsx',
+    board_df.to_excel(
+        f'data/out/faturamento_{filename}.xlsx',
         sheet_name='FATURAMENTO',
         index=False,
     )
@@ -184,7 +184,9 @@ def generate_products_reports_by_team(team_products_dfs):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_products_reports(team_products_dfs, current_folders_id):
+def deliver_products_reports(products_df, current_folders_id):
+    generate_products_report(products_df)
+    team_products_dfs = slice_sales_df_by_team(products_df)
     generate_products_reports_by_team(team_products_dfs)
     upload_files_to(
         source='data/out',
@@ -204,7 +206,9 @@ def generate_master_reports_by_team(team_sales_bi_dfs):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_master_reports(team_sales_bi_dfs, current_folders_id):
+def deliver_master_reports(sales_bi_df, current_folders_id):
+    generate_master_report(sales_bi_df)
+    team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df) 
     generate_master_reports_by_team(team_sales_bi_dfs)
     upload_files_to(
         source='data/out',
@@ -218,10 +222,9 @@ def deliver_master_reports(team_sales_bi_dfs, current_folders_id):
 def deliver_comercial_reports(current_folders_id):
     products_df = get_sales_lines_df()
     sales_bi_df = get_sales_bi_df(products_df)    
-    delete_old_files('data/out')
-    team_sales_bi_dfs = slice_sales_df_by_team(sales_bi_df)
-    deliver_products_reports(products_df, current_folders_id)
-    deliver_master_reports(team_sales_bi_dfs, current_folders_id)
+    delete_old_files('data/out')       
+    deliver_products_reports(products_df, current_folders_id)    
+    deliver_master_reports(sales_bi_df, current_folders_id)
     send_messages_by_group(
         gdrive_folder_id=current_folders_id['comercial'], group='comercial'
     )
@@ -252,20 +255,17 @@ def deliver_account_reports(current_folders_id):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_monthly_reports(current_folders_id):
-    delete_old_files('data/out')
-    df = get_dataframe_from_sql_table("cd_empresa")
-    df_empresa = df[['cod_empresa',"razao_social"]]
-    montlhy_df = get_monthly_billings_df()
-    montlhy_df = pd.merge(montlhy_df, df_empresa, how='left')
-    generate_montlhy_report(montlhy_df, 'geral')
+def deliver_board_reports(current_folders_id):
+    delete_old_files('data/out')    
+    board_df = get_board_billings_df()
+    generate_board_report(board_df, 'geral')
     upload_files_to(
         source='data/out',
-        destiny=current_folders_id['month'],
+        destiny=current_folders_id['comercial'],
     )
     delete_old_files('data/out')
     send_messages_by_group(
-        gdrive_folder_id=current_folders_id['month'], group='test'
+        gdrive_folder_id=current_folders_id['comercial'], group='board'
     )
 
 
@@ -277,11 +277,9 @@ def main():
     current_folders_id = create_gdrive_folders()
 
     if is_comercial_weekday():
+        deliver_board_reports(current_folders_id)
         deliver_comercial_reports(current_folders_id)
         deliver_account_reports(current_folders_id)
-
-    if CURRENT_DAY == 1:
-        deliver_monthly_reports(current_folders_id)
 
     delete_old_files('data/out')
 
@@ -289,8 +287,7 @@ def main():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    current_folders_id = create_gdrive_folders()
-    delete_old_files('data/out')
-    deliver_monthly_reports(current_folders_id)
+    ...
+
 if __name__ == '__main__':
-    test()
+    main()
