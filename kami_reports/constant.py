@@ -179,10 +179,10 @@ DAILY_BILLINGS_NUM_COLS = {
     'valor_nota': np.float64,
     'total_bruto': np.float64,
 }
-MONTHLY_BILLINGS_NUM_COLS = {
+BOARD_BILLINGS_NUM_COLS = {
     'ano': np.int64,
     'mes': np.int64,
-    'cod_empresa': np.int64,
+    'cod_empresa_pedido': np.int64,
     'cod_pedido': np.int64,
     'cod_cliente': np.int64,
     'situacao_pedido': np.int64,
@@ -199,10 +199,9 @@ MONTHLY_BILLINGS_NUM_COLS = {
     'desconto_pedido': np.float64,
     'valor_nota': np.float64,
     'situacao_entrega': np.int64,
-    'empresa_pedido': np.int64,
-    'empresa_nf': np.int64,
+    'cod_empresa_faturamento': np.int64,
 }
-MONTHLY_BILLINGS_SCRIPT = 'SELECT * FROM vw_monthly_billings'
+BOARD_BILLINGS_SCRIPT = 'SELECT * FROM vw_monthly_billings'
 DAILY_BILLINGS_SCRIPT = f'SELECT * FROM vw_daily_billings AS vdb \
     WHERE vdb.ano >= {STARTING_YEAR}'
 CUSTOMER_DETAILS_SCRIPT = f'SELECT * FROM vw_customer_details AS vcd WHERE vcd.ultimo_ano_ativo >= {STARTING_YEAR}'

@@ -12,8 +12,8 @@ from constant import (
     CUSTOMER_DETAILS_SCRIPT,
     DAILY_BILLINGS_NUM_COLS,
     DAILY_BILLINGS_SCRIPT,
-    MONTHLY_BILLINGS_NUM_COLS,
-    MONTHLY_BILLINGS_SCRIPT,
+    BOARD_BILLINGS_NUM_COLS,
+    BOARD_BILLINGS_SCRIPT,
     FUTURE_BILLS_SCRIPT,
     FUTURE_BILLS_DATETIME_COLS,
     FUTURE_BILLS_NUM_COLS
@@ -108,11 +108,11 @@ def get_dataframe_from_sql_table(
 
 @benchmark_with(db_connector_logger)
 @logging_with(db_connector_logger)
-def get_vw_monthly_billings() -> pd.DataFrame:
+def get_vw_board_billings() -> pd.DataFrame:
     return get_dataframe_from_sql_query(
-        MONTHLY_BILLINGS_SCRIPT,
+        BOARD_BILLINGS_SCRIPT,
         date_cols=BILLINGS_DATETIME_COLS,
-        cols_types=MONTHLY_BILLINGS_NUM_COLS,
+        cols_types=BOARD_BILLINGS_NUM_COLS,
     )
 
 
