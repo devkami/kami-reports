@@ -16,7 +16,7 @@ ponto_controle.descricao AS 'situacao'
 FROM vd_pedido_item AS pedido_item
 INNER JOIN vd_pedido AS pedido 
   ON (pedido.cod_pedido = pedido_item.cod_pedido
-  AND pedido.nop IN ("6.102","6.404","BLACKFRIDAY","VENDA","VENDA_S_ESTOQUE","WORKSHOP")
+  AND pedido.nop IN ("6.102","6.404","BLACKFRIDAY","VENDA","VENDA_S_ESTOQUE","WORKSHOP", "BONIFICADO")
   AND pedido.situacao >= 20
   AND pedido.situacao < 200)
 INNER JOIN cd_cond_pagto AS cond_pgto ON cond_pgto.cod_cond_pagto = pedido.cod_cond_pagto
