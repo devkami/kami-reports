@@ -1,28 +1,33 @@
 import json
 import logging
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from os import getenv
-from typing import List
+from typing import List, Dict
 
 from jinja2 import Environment, FileSystemLoader
 from kami_logging import benchmark_with, logging_with
 from kami_messenger.botconversa import Botconversa
 from kami_messenger.email_messenger import EmailMessenger
 from kami_messenger.messenger import Message
+from database import get_dataframe_from_sql
+from constant import MESSENGER_TYPES
 
 messages_looger = logging.getLogger('messages_generator')
-loader = FileSystemLoader('messages')
-env = Environment(loader=loader)
+template_loader = FileSystemLoader('messages/templates')
+template_env = Environment(loader=template_loader)
 
 
-@dataclass
+@dataclass(order=True)
 class Contact:
+    sort_index: int = field(init=False, repr=False)
+    id: int = 0
+    name: str = ''
+    email: str = ''
+    phone: str = ''
+    groups: list = field(default_factory=list)
 
-    name: str
-    email: str
-    phone: str
-    groups: List[str]
-
+    def __post_init__(self):
+        self.sort_index = self.id
 
 @logging_with(messages_looger)
 @benchmark_with(messages_looger)
@@ -37,39 +42,46 @@ def get_contacts_from_json(json_file) -> List[Contact]:
 
     return contacts
 
+@logging_with(messages_looger)
+@benchmark_with(messages_looger)
+def get_contact_by_id(search_id: int, contacts: List[Contact]) -> Contact | None:    
+    for contact in contacts:
+        if contact.id == search_id:
+            return contact
+    messages_looger.error(f'There is no contact for the given id! given id = {search_id}')
+    return None
 
-def filter_contact_by_group(contacts, group) -> List[Contact]:
+@logging_with(messages_looger)
+def filter_contact_by_group(contacts:List[Contact], group: str) -> List[Contact]:
     return [contact for contact in contacts if group in contact.groups]
 
-
 @logging_with(messages_looger)
 @benchmark_with(messages_looger)
-def generate_messages(
-    contacts, gdrive_folder_id, template_message
-) -> List[Message]:
-    messages = []
-    account_message_template = env.get_template(template_message)
+def get_sellers_contacts_from_database():
+    script = 'data/in/contact_sellers.sql'
+    contact_sellers = get_dataframe_from_sql(script)
+    contact_sellers['groups'] = 'seller'
+    contacts = contact_sellers.apply(lambda row: Contact(**row), axis=1)
+
     for contact in contacts:
-        message_data = account_message_template.render(
-            contact_phone=contact.phone,
-            contact_name=contact.name,
-            contact_email=contact.email,
-            report_id_folder=gdrive_folder_id,
-        )
-        messages.append(message_data)
-    return messages
+        contact.groups = [contact.groups]
 
+    return contacts
 
 @logging_with(messages_looger)
 @benchmark_with(messages_looger)
-def generate_messages_by_group(gdrive_folder_id, group):
-    all_contacts = get_contacts_from_json('messages/contacts.json')
-    filtered_contacts = filter_contact_by_group(all_contacts, group)
-    return generate_messages(
-        filtered_contacts, gdrive_folder_id, f'{group}_message.json'
+def generate_message_by_template(template_name: str, contact: Contact, message_dict: Dict) -> Message | None:
+    message_template = template_env.get_template(f'{template_name}_message.md')
+    message_dict['contact_name'] = contact.name
+    message_body = message_template.render(message_dict)
+    return Message(
+        sender='',
+        recipients=[],
+        body=message_body,
+        subject=message_dict['subject']
     )
 
-
+@logging_with(messages_looger)
 def send_email(message):
     email_messenger_str = {
         'name': 'Email - kamico.com.br',
@@ -83,7 +95,7 @@ def send_email(message):
     email_messenger = EmailMessenger(**email_messenger_str)
     email_messenger.sendMessage()
 
-
+@logging_with(messages_looger)
 def send_whatsapp_message(message):
     botconversa_data = {
         'name': 'Botconversa',
@@ -94,25 +106,39 @@ def send_whatsapp_message(message):
     botconversa = Botconversa(**botconversa_data)
     botconversa.sendMessage()
 
+@logging_with(messages_looger)
+def send_message_by_messenger(messenger: str, message: Message, contact: Contact):
+    if messenger not in MESSENGER_TYPES:
+        messages_looger.error(f'Mesenger Type:{messenger}, does not exit\'s')
+
+    if messenger == 'whatsapp':
+        message.recipients = [contact.phone]
+        send_whatsapp_message(message=message)
+
+    if messenger == 'email':
+        message.recipients = [contact.email]
+        send_email(message=message)
+
+    messages_looger.error('Unable to send message')
+
+@logging_with(messages_looger)
+def send_message_by_all_messengers(message: Message, contact: Contact):
+    for messenger in MESSENGER_TYPES:
+        send_message_by_messenger(messenger, message, contact)
 
 @logging_with(messages_looger)
 @benchmark_with(messages_looger)
-def send_email_messages_by_group(gdrive_folder_id, group):
-    for message in generate_messages_by_group(gdrive_folder_id, group):
-        mess = Message(**json.loads(message)['email'])
-        send_email(mess)
-
-
-@logging_with(messages_looger)
-@benchmark_with(messages_looger)
-def send_whatsapp_messages_by_group(gdrive_folder_id, group):
-    for message in generate_messages_by_group(gdrive_folder_id, group):
-        mess = Message(**json.loads(message)['whatsapp'])
-        send_whatsapp_message(mess)
-
+def send_message_by_group(template_name: str, group: str, message_dict: Dict, contacts: List[Contact]):
+    filtered_contacts = filter_contact_by_group(contacts, group)    
+    for contact in filtered_contacts:
+        message = generate_message_by_template(template_name, contact, message_dict)
+        send_message_by_all_messengers(message, contact)
 
 @logging_with(messages_looger)
 @benchmark_with(messages_looger)
-def send_messages_by_group(gdrive_folder_id, group):
-    send_email_messages_by_group(gdrive_folder_id, group)
-    send_whatsapp_messages_by_group(gdrive_folder_id, group)
+def send_message_by_seller_id(contact_id: int, template_name: str, message_dict: str):
+    contacts = get_sellers_contacts_from_database()
+    sellers_contacts = filter_contact_by_group(contacts, 'seller')    
+    contact = get_contact_by_id(contact_id, sellers_contacts)
+    message = generate_message_by_template(template_name, contact, message_dict)
+    send_message_by_all_messengers(message, contact)

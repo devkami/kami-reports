@@ -260,3 +260,4 @@ BEEXP_PRODUCTS = (
     'BR13711-17',
     'BR13711-18',
 )
+MESSENGER_TYPES = ['whatsapp', 'email']

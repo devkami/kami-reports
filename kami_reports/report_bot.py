@@ -6,8 +6,7 @@ from os import getenv
 
 import pandas as pd
 from constant import (
-    COMERCIAL_WEEK,
-    CURRENT_DAY,
+    COMERCIAL_WEEK,    
     CURRENT_DAY_FOLDER,
     CURRENT_MONTH,
     CURRENT_WEEK_FOLDER,
@@ -27,7 +26,7 @@ from dotenv import load_dotenv
 from filemanager import delete_old_files
 from kami_gdrive import create_folder, gdrive_logger, upload_files_to
 from kami_logging import benchmark_with, logging_with
-from messages import send_messages_by_group
+from messages import get_contacts_from_json, send_message_by_group
 from unidecode import unidecode
 from database import update_database_views, get_dataframe_from_sql_table
 report_bot_logger = logging.getLogger('report_bot')
@@ -219,16 +218,21 @@ def deliver_master_reports(sales_bi_df, current_folders_id):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_comercial_reports(current_folders_id):
+def deliver_comercial_reports(current_folders_id, contacts):
     products_df = get_sales_lines_df()
     sales_bi_df = get_sales_bi_df(products_df)    
     delete_old_files('data/out')       
     deliver_products_reports(products_df, current_folders_id)    
-    deliver_master_reports(sales_bi_df, current_folders_id)
-    send_messages_by_group(
-        gdrive_folder_id=current_folders_id['comercial'], group='comercial'
+    deliver_master_reports(sales_bi_df, current_folders_id)    
+    send_message_by_group(
+        template_name='comercial',
+        group='comercial',
+        message_dict={
+            'subject':'Faturamento Geral Diário',
+            'gdrive_folder_id':current_folders_id['comercial']
+        },
+        contacts=contacts
     )
-
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
@@ -241,21 +245,26 @@ def generate_account_report(filename):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_account_reports(current_folders_id):
+def deliver_account_reports(current_folders_id, contacts):
     generate_account_report('geral')
     upload_files_to(
         source='data/out',
         destiny=current_folders_id['account'],
     )
     delete_old_files('data/out')
-    send_messages_by_group(
-        gdrive_folder_id=current_folders_id['account'], group='account'
+    send_message_by_group(
+        template_name='account',
+        group='account',
+        message_dict={
+            'subject':'Relatórios Financeiros Diários',
+            'gdrive_folder_id':current_folders_id['account']
+        },
+        contacts=contacts
     )
-
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def deliver_board_reports(current_folders_id):
+def deliver_board_reports(current_folders_id, contacts):
     delete_old_files('data/out')    
     board_df = get_board_billings_df()
     generate_board_report(board_df, 'geral')
@@ -264,22 +273,29 @@ def deliver_board_reports(current_folders_id):
         destiny=current_folders_id['comercial'],
     )
     delete_old_files('data/out')
-    send_messages_by_group(
-        gdrive_folder_id=current_folders_id['comercial'], group='board'
+    send_message_by_group(
+        template_name='board',
+        group='board',
+        message_dict={
+            'subject':'Faturamento Geral Diário',
+            'gdrive_folder_id':current_folders_id['comercial']
+        },
+        contacts=contacts
     )
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def main():
+def main():    
     report_bot_logger.info('Start Execution.')
     delete_old_files('data/out')
     current_folders_id = create_gdrive_folders()
+    contacts = get_contacts_from_json('messages/contacts.json')
 
     if is_comercial_weekday():
-        deliver_board_reports(current_folders_id)
-        deliver_comercial_reports(current_folders_id)
-        deliver_account_reports(current_folders_id)
+        deliver_board_reports(current_folders_id, contacts)
+        deliver_comercial_reports(current_folders_id, contacts)
+        deliver_account_reports(current_folders_id, contacts)
 
     delete_old_files('data/out')
 
@@ -287,7 +303,10 @@ def main():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    ...
+    delete_old_files('data/out')
+    current_folders_id = create_gdrive_folders()
+    contacts = get_contacts_from_json('messages/contacts.json')
+    deliver_account_reports(current_folders_id, contacts)
 
 if __name__ == '__main__':
-    main()
+    test()
