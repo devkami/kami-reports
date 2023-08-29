@@ -309,4 +309,4 @@ def test():
     deliver_account_reports(current_folders_id, contacts)
 
 if __name__ == '__main__':
-    test()
+    main()
