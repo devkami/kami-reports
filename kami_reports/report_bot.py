@@ -1,19 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
+import sched
+import time
 from calendar import month_name
+from datetime import datetime as dt
 from os import getenv
 
 import pandas as pd
 from constant import (
-    COMERCIAL_WEEK,
     CURRENT_DAY_FOLDER,
     CURRENT_MONTH,
     CURRENT_WEEK_FOLDER,
-    CURRENT_WEEKDAY,
     CURRENT_YEAR,
 )
-from database import get_dataframe_from_sql_table, update_database_views
 from dataframe import (
     build_master_df,
     build_products_df,
@@ -169,8 +169,9 @@ def generate_future_bills_report(future_bills_df, filename):
     )
 
 
-def is_comercial_weekday():
-    return CURRENT_WEEKDAY in COMERCIAL_WEEK
+def is_report_time():
+    now = dt.now()
+    return now.weekday() < 5 and now.hour == 6
 
 
 @benchmark_with(report_bot_logger)
@@ -186,6 +187,7 @@ def generate_products_reports_by_team(team_products_dfs):
 @logging_with(report_bot_logger)
 def deliver_products_reports(products_df, current_folders_id):
     team_products_dfs = slice_sales_df_by_team(products_df)
+    delete_old_files('data/out')
     generate_products_reports_by_team(team_products_dfs)
     upload_files_to(
         source='data/out',
@@ -210,6 +212,7 @@ def generate_master_reports_by_team(team_sales_master_dfs):
 @logging_with(report_bot_logger)
 def deliver_master_reports(master_df, current_folders_id):
     master_df = master_df.drop_duplicates(keep='first')
+    delete_old_files('data/out')
     generate_master_report(master_df)
     team_master_dfs = slice_sales_df_by_team(master_df)
     generate_master_reports_by_team(team_master_dfs)
@@ -227,7 +230,6 @@ def deliver_comercial_reports(current_folders_id, contacts):
     sales_orders_df = build_sales_orders_df(sales_lines_df)
     products_df = build_products_df(sales_lines_df)
     master_df = build_master_df(sales_orders_df)
-    delete_old_files('data/out')
     deliver_products_reports(products_df, current_folders_id)
     deliver_master_reports(master_df, current_folders_id)
     send_message_by_group(
@@ -253,6 +255,7 @@ def generate_account_report(filename):
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_account_reports(current_folders_id, contacts):
+    delete_old_files('data/out')
     generate_account_report('geral')
     upload_files_to(
         source='data/out',
@@ -294,34 +297,26 @@ def deliver_board_reports(current_folders_id, contacts):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def main():
+def deliver_reports():
     report_bot_logger.info('Start Execution.')
-    delete_old_files('data/out')
     current_folders_id = create_gdrive_folders()
     contacts = get_contacts_from_json('messages/contacts.json')
-
-    if is_comercial_weekday():
-        deliver_board_reports(current_folders_id, contacts)
-        deliver_comercial_reports(current_folders_id, contacts)
-        deliver_account_reports(current_folders_id, contacts)
-
-    delete_old_files('data/out')
+    deliver_board_reports(current_folders_id, contacts)
+    deliver_comercial_reports(current_folders_id, contacts)
+    deliver_account_reports(current_folders_id, contacts)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    try:
-        delete_old_files('data/out')
-        current_folders_id = create_gdrive_folders()
-        contacts = get_contacts_from_json('messages/contacts.json')
-        deliver_comercial_reports(current_folders_id, contacts)
-    except Exception as e:
-        raise e
+    ...
+
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def main():
+    ...
 
 
 if __name__ == '__main__':
-    try:
-        test()
-    except Exception as e:
-        raise e
+    main()
