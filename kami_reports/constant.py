@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+
 import numpy as np
 
-APP_VERSION = "0.3.3"
+APP_VERSION = '0.3.3'
 TIMEOUT = 3600
 PAGE_SIZE = 100
 OPERATORS = [
@@ -66,8 +67,6 @@ CURRENT_WEEK_FOLDER = f'Semana-{WEEK_YEAR_NUMBER} ({START_WEEK.day}-{START_WEEK.
 CURRENT_DAY_FOLDER = f'{CURRENT_DAY}-{WEEKDAYS_PTBR_ABBR[CURRENT_WEEKDAY]}'
 COMERCIAL_WEEK = [0, 1, 2, 3, 4]
 COLUMNS_NAMES_HEAD = [
-    'cod_colaborador',
-    'nome_colaborador',
     'cod_cliente',
     'nome_cliente',
     'razao_social',
@@ -86,7 +85,6 @@ COLUMNS_NAMES_HEAD = [
     'cod_marca',
     'desc_marca',
     'STATUS',
-    'equipe',
 ]
 SALE_NOPS = [
     '6.102',
@@ -212,7 +210,10 @@ BILLINGS_DATETIME_COLS = [
 ]
 FUTURE_BILLS_SCRIPT = 'SELECT * FROM vw_future_bills'
 FUTURE_BILLS_DATETIME_COLS = ['dt_vencimento']
-FUTURE_BILLS_NUM_COLS = {'cod_empresa': np.int64, 'total_a_receber': np.float64}
+FUTURE_BILLS_NUM_COLS = {
+    'cod_empresa': np.int64,
+    'total_a_receber': np.float64,
+}
 ODERS_COLS_HEAD = [
     'ano',
     'mes',
@@ -248,7 +249,7 @@ ORDER_ITEM_DATE_COLS = [
     'dt_prev_treinamento',
     'dt_prevista',
     'dt_reserva_estoque',
-    'dt_retorno'
+    'dt_retorno',
 ]
 BEEXP_PRODUCTS = (
     '13711-13',
@@ -261,3 +262,26 @@ BEEXP_PRODUCTS = (
     'BR13711-18',
 )
 MESSENGER_TYPES = ['whatsapp', 'email']
+SALES_ORDERS_GROUP_COLUMNS = [
+    'ano',
+    'mes',
+    'empresa_pedido',
+    'empresa_nota_fiscal',
+    'cod_cliente',
+    'cod_pedido',
+    'nr_ped_compra_cli',
+    'cod_situacao',
+    'desc_situacao',
+    'nop',
+    'cfop',
+    'cod_cond_pagto',
+    'cod_forma_pagto',
+    'forma_pgto',
+    'cod_grupo_produto',
+    'desc_grupo_produto',
+    'cod_grupo_pai',
+    'desc_grupo_pai',
+    'cod_marca',
+    'desc_marca',
+]
+SALES_ORDERS_SUM_COLUMNS = ['desconto_pedido', 'valor_nota', 'total_bruto']
