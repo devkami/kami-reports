@@ -17,3 +17,6 @@
 
 ## v0.3.3 Extrai as Equipes de vendas da base de dados do UNO
 > As equipes de vendas foram adicionadas ao UNO e a função para acrescentar a coluna de equipes no dataframe não é mais necessária e foi removida junto com suas referências e objetos;
+
+## v0.4 Clientes por Vendedores e Equipes de Vendas Extraídos do UNO
+>Os clientes de cada vendedor e As equipes de vendas agora são almentados direto da base de dados do UNO;

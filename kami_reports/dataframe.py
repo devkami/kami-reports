@@ -20,26 +20,26 @@ from constant import (
     TEMPLATE_COLS,
     TROUSSEAU_NOPS,
 )
-from database import (
+from kami_uno_database import (
     get_qy_contact_sellers,
     get_qy_default_seller,
     get_qy_participant_seller,
     get_qy_sales_teams,
     get_vw_board_billings,
     get_vw_customer_details,
-    get_vw_daily_billings,
     get_vw_future_bills,
+    get_vw_sales_lines
 )
 from kami_logging import benchmark_with, logging_with
 from numpy import dtype
-
+from dotenv import load_dotenv
+load_dotenv()
 dataframe_logger = logging.getLogger('dataframe')
-
 
 @benchmark_with(dataframe_logger)
 @logging_with(dataframe_logger)
 def get_sales_lines_df():
-    sales_lines_df = get_vw_daily_billings()
+    sales_lines_df = get_vw_sales_lines()
     return sales_lines_df
 
 
@@ -259,17 +259,6 @@ def build_master_df(sales_orders_df: pd.DataFrame) -> pd.DataFrame:
     except Exception as e:
         dataframe_logger.exception(f'An error occurred: ', e)
     return master_sales_teams_df.drop_duplicates(keep='first')
-
-
-@benchmark_with(dataframe_logger)
-@logging_with(dataframe_logger)
-def build_products_df(sales_lines_df: pd.DataFrame) -> pd.DataFrame:
-    products_sales_teams_df = pd.DataFrame()
-    try:
-        products_sales_teams_df = add_sales_teams_on_sellers_df(sales_lines_df)
-    except Exception as e:
-        dataframe_logger.exception(f'An error occurred: ', e)
-    return products_sales_teams_df.drop_duplicates(keep='first')
 
 
 def get_tagged_columns():

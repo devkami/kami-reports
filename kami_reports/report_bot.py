@@ -1,22 +1,19 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-import sched
-import time
 from calendar import month_name
 from datetime import datetime as dt
 from os import getenv
-
+from zipfile import ZipFile, ZIP_DEFLATED, ZIP_LZMA, ZIP_BZIP2
 import pandas as pd
-from constant import (
+from kami_reports.constant import (
     CURRENT_DAY_FOLDER,
     CURRENT_MONTH,
     CURRENT_WEEK_FOLDER,
     CURRENT_YEAR,
 )
-from dataframe import (
+from kami_reports.dataframe import (
     build_master_df,
-    build_products_df,
     build_sales_orders_df,
     get_board_billings_df,
     get_customer_details_df,
@@ -25,12 +22,12 @@ from dataframe import (
     slice_sales_df_by_team,
 )
 from dotenv import load_dotenv
-from filemanager import delete_old_files
+from kami_filemanager import delete_files_from
 from kami_gdrive import create_folder, gdrive_logger, upload_files_to
 from kami_logging import benchmark_with, logging_with
-from messages import get_contacts_from_json, send_message_by_group
 from unidecode import unidecode
-
+from messages.messages import get_contacts_from_json, send_message_by_group
+from os.path import split as split_filename
 report_bot_logger = logging.getLogger('report_bot')
 report_bot_logger.info('Loading Enviroment Variables')
 load_dotenv()
@@ -79,6 +76,47 @@ def create_gdrive_folders():
         'account': current_day_account_gdrive_folder,
     }
 
+class ReportFormatError(Exception):
+    def __init__(self, value: str, message: str):
+        self.value = value
+        self.message = message
+        super().__init__(message)
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def zip_file(filepath: str):    
+    zip_filepath = ''
+    filefolder, filename = split_filename(filepath)
+    try:
+        zip_filepath = f'data/out/zip/{filename}.zip'
+        with ZipFile(zip_filepath, 'w') as f:
+            f.write(filepath, compress_type=ZIP_BZIP2, compresslevel=9)
+    except Exception as e:
+        raise e
+    return zip_filepath
+
+@benchmark_with(report_bot_logger)
+@logging_with(report_bot_logger)
+def generate_report(df: pd.DataFrame, type: str, filename:str='geral', zip:bool=False, format:str='xlsx') -> str:
+    report_file = ''
+    try:
+        report_file = f'data/out/{type}_{filename}.{format}'
+        if format == 'xlsx':
+            df.to_excel(report_file, sheet_name=str.upper(type), index=False)
+        elif format == 'csv':
+            df.to_csv(report_file, index=False)
+        else:
+            raise ReportFormatError(
+                value=format,
+                message=f"'{format}' Is Not a Valid Format to Generate Reports. Try use format='csv' or format='xlsx'"
+            )
+        if zip:
+            report_file = zip_file(report_file)
+    except Exception as e:
+        report_bot_logger.exception(f'An error occurred: ', e)
+    return report_file
+
+  
 
 def tag_client_overdue_state(row):
 
@@ -92,10 +130,7 @@ def tag_client_overdue_state(row):
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def calculate_overdue_kpi(customer_df):
-    df_overdue = customer_df.copy()
-    number_cols = ['dias_atraso', 'valor_devido']
-    df_overdue[number_cols] = df_overdue[number_cols].apply(pd.to_numeric)
-    df_overdue[number_cols].fillna(0, inplace=True)
+    df_overdue = customer_df.copy()    
     df_overdue['status'] = customer_df.apply(
         lambda row: tag_client_overdue_state(row), axis=1
     )
@@ -108,36 +143,20 @@ def calculate_overdue_kpi(customer_df):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_master_report(master_df, filename='geral'):
-    if not master_df.empty:
-        master_df.to_excel(
-            f'data/out/mestre_{filename}.xlsx',
-            sheet_name='MESTRE',
-            index=False,
-        )
-        return True
-    return False
+def generate_master_report(master_df, zip=True, format='xlsx'):
+    return generate_report(df=master_df, type='mestre', zip=zip, format=format)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_board_report(board_df, filename):
-    delete_old_files('data/out')
-    board_df.to_excel(
-        f'data/out/faturamento_{filename}.xlsx',
-        sheet_name='FATURAMENTO',
-        index=False,
-    )
+def generate_board_report(board_df, zip=True, format='xlsx'):
+    return generate_report(df=board_df, type='faturamento', zip=zip, format=format)    
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_products_report(products_df, filename='geral'):
-    products_df.to_excel(
-        f'data/out/produtos_{filename}.xlsx',
-        sheet_name='PRODUTOS',
-        index=False,
-    )
+def generate_products_report(products_df, zip=True, format='xlsx'):
+    return generate_report(df=products_df, type='produtos', zip=zip, format=format)
 
 
 def normalize_name(name):
@@ -150,28 +169,15 @@ def normalize_name(name):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_overdue_report(customer_df, filename):
+def generate_overdue_report(customer_df):
     overdue_df = calculate_overdue_kpi(customer_df)
-    overdue_df.to_excel(
-        f'data/out/inadimplentes_{filename}.xlsx',
-        sheet_name='INADIMPLENTES',
-        index=False,
-    )
-
+    return generate_report(df=overdue_df, type='inadimplentes', filename='geral')
+    
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_future_bills_report(future_bills_df, filename):
-    future_bills_df.to_excel(
-        f'data/out/contas_a_receber_{filename}.xlsx',
-        sheet_name='PAGAMENTOS FUTUROS',
-        index=False,
-    )
-
-
-def is_report_time():
-    now = dt.now()
-    return now.weekday() < 5 and now.hour == 6
+def generate_future_bills_report(future_bills_df):
+    return generate_report(df=future_bills_df, type='contas_a_receber', filename='geral')
 
 
 @benchmark_with(report_bot_logger)
@@ -180,61 +186,58 @@ def generate_products_reports_by_team(team_products_dfs):
     for team_products_df_dict in team_products_dfs:
         for team_name, team_product_df in team_products_df_dict.items():
             team_name = normalize_name(team_name)
-            generate_products_report(team_product_df, team_name)
+            generate_report(df=team_product_df, type='produtos', filename=team_name)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_products_reports(products_df, current_folders_id):
+    delete_files_from('data/out')
+    delete_files_from('data/out/zip')
     team_products_dfs = slice_sales_df_by_team(products_df)
-    delete_old_files('data/out')
+    generate_products_report(products_df)
     generate_products_reports_by_team(team_products_dfs)
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['products'],
-    )
-    delete_old_files('data/out')
+    upload_files_to(source='data/out', destiny=current_folders_id['products'])
+    upload_files_to(source='data/out/zip', destiny=current_folders_id['products'])
+    delete_files_from('data/out')
+    delete_files_from('data/out/zip')
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def generate_master_reports_by_team(team_sales_master_dfs):
     for team_sales_master_df_dict in team_sales_master_dfs:
-        for (
-            team_name,
-            team_sales_master_df,
-        ) in team_sales_master_df_dict.items():
+        for team_name, team_master_df in team_sales_master_df_dict.items():
             team_name = normalize_name(team_name)
-            generate_master_report(team_sales_master_df, team_name)
+            generate_report(df=team_master_df, type='mestre', filename=team_name)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_master_reports(master_df, current_folders_id):
+    delete_files_from('data/out')
+    delete_files_from('data/out/zip')
     master_df = master_df.drop_duplicates(keep='first')
-    delete_old_files('data/out')
-    generate_master_report(master_df)
     team_master_dfs = slice_sales_df_by_team(master_df)
+    generate_master_report(master_df)    
     generate_master_reports_by_team(team_master_dfs)
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['master'],
-    )
-    delete_old_files('data/out')
+    upload_files_to(source='data/out', destiny=current_folders_id['master'])
+    upload_files_to(source='data/out/zip', destiny=current_folders_id['master'])    
+    delete_files_from('data/out')
+    delete_files_from('data/out/zip')
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_comercial_reports(current_folders_id, contacts):
     sales_lines_df = get_sales_lines_df()
-    sales_orders_df = build_sales_orders_df(sales_lines_df)
-    products_df = build_products_df(sales_lines_df)
+    sales_orders_df = build_sales_orders_df(sales_lines_df)    
     master_df = build_master_df(sales_orders_df)
-    deliver_products_reports(products_df, current_folders_id)
+    deliver_products_reports(sales_lines_df, current_folders_id)
     deliver_master_reports(master_df, current_folders_id)
     send_message_by_group(
         template_name='comercial',
-        group='comercial',
+        group='test',
         message_dict={
             'subject': 'Faturamento Geral Diário',
             'gdrive_folder_id': current_folders_id['comercial'],
@@ -245,26 +248,23 @@ def deliver_comercial_reports(current_folders_id, contacts):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_account_report(filename):
+def generate_account_report():
     customer_df = get_customer_details_df()
     future_bills_df = get_future_bills_df()
-    generate_overdue_report(customer_df, filename)
-    generate_future_bills_report(future_bills_df, filename)
+    generate_overdue_report(customer_df)
+    generate_future_bills_report(future_bills_df)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_account_reports(current_folders_id, contacts):
-    delete_old_files('data/out')
-    generate_account_report('geral')
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['account'],
-    )
-    delete_old_files('data/out')
+    delete_files_from('data/out')
+    generate_account_report()
+    upload_files_to(source='data/out/zip',destiny=current_folders_id['account'])
+    delete_files_from('data/out')
     send_message_by_group(
         template_name='account',
-        group='account',
+        group='test',
         message_dict={
             'subject': 'Relatórios Financeiros Diários',
             'gdrive_folder_id': current_folders_id['account'],
@@ -276,17 +276,15 @@ def deliver_account_reports(current_folders_id, contacts):
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def deliver_board_reports(current_folders_id, contacts):
-    delete_old_files('data/out')
+    delete_files_from('data/out/zip')
     board_df = get_board_billings_df()
-    generate_board_report(board_df, 'geral')
-    upload_files_to(
-        source='data/out',
-        destiny=current_folders_id['comercial'],
-    )
-    delete_old_files('data/out')
+    generate_board_report(board_df)
+    upload_files_to(source='data/out/zip', destiny=current_folders_id['comercial'])
+    delete_files_from('data/out ')
+    delete_files_from('data/out/zip')
     send_message_by_group(
         template_name='board',
-        group='board',
+        group='test',
         message_dict={
             'subject': 'Faturamento Geral Diário',
             'gdrive_folder_id': current_folders_id['comercial'],
@@ -309,7 +307,9 @@ def deliver_reports():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    ...
+    delete_files_from('data/out')
+    delete_files_from('data/out/zip')
+    deliver_reports()
 
 
 @benchmark_with(report_bot_logger)
@@ -319,4 +319,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    df = get_board_billings_df()
+    print(df)

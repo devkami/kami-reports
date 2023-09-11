@@ -160,7 +160,7 @@ cython_debug/
 #.idea/
 
 
-data/out/
+database/out/
 *.xlsx
 *.csv
 
