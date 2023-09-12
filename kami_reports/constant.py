@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime, timedelta
+
 import numpy as np
 
-APP_VERSION = "0.3.4"
+APP_VERSION = '0.3.4'
 TIMEOUT = 3600
 PAGE_SIZE = 100
 OPERATORS = [
@@ -194,7 +195,10 @@ BILLINGS_DATETIME_COLS = [
 ]
 FUTURE_BILLS_SCRIPT = 'SELECT * FROM vw_future_bills'
 FUTURE_BILLS_DATETIME_COLS = ['dt_vencimento']
-FUTURE_BILLS_NUM_COLS = {'cod_empresa': np.int64, 'total_a_receber': np.float64}
+FUTURE_BILLS_NUM_COLS = {
+    'cod_empresa': np.int64,
+    'total_a_receber': np.float64,
+}
 ODERS_COLS_HEAD = [
     'ano',
     'mes',
@@ -241,6 +245,6 @@ SALES_ORDERS_GROUP_COLUMNS = [
     'cod_grupo_pai',
     'desc_grupo_pai',
     'cod_marca',
-    'desc_marca',    
+    'desc_marca',
 ]
 SALES_ORDERS_SUM_COLUMNS = ['desconto_pedido', 'valor_nota', 'total_bruto']

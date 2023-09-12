@@ -5,10 +5,10 @@ from typing import Dict, List
 
 import pandas as pd
 from constant import (
-    MASTER_COLUMNS_HEAD,
     COMPANIES,
     CURRENT_MONTH,
     CURRENT_YEAR,
+    MASTER_COLUMNS_HEAD,
     MONTHS_PTBR,
     MONTHS_PTBR_ABBR,
     SALE_NOPS,
@@ -20,21 +20,23 @@ from constant import (
     TEMPLATE_COLS,
     TROUSSEAU_NOPS,
 )
+from dotenv import load_dotenv
+from kami_logging import benchmark_with, logging_with
 from kami_uno_database import (
-    get_qy_sellers_contact,
     get_qy_default_seller,
     get_qy_participant_seller,
     get_qy_sales_teams,
+    get_qy_sellers_contact,
     get_vw_board_billings,
     get_vw_customer_details,
     get_vw_future_bills,
-    get_vw_sales_lines
+    get_vw_sales_lines,
 )
-from kami_logging import benchmark_with, logging_with
 from numpy import dtype
-from dotenv import load_dotenv
+
 load_dotenv()
 dataframe_logger = logging.getLogger('dataframe')
+
 
 @benchmark_with(dataframe_logger)
 @logging_with(dataframe_logger)
@@ -392,7 +394,7 @@ def calculate_year_to_date(master_df):
 @benchmark_with(dataframe_logger)
 @logging_with(dataframe_logger)
 def calculate_master_year_to_date(master_df):
-    past_years_df = calculate_accumulated_past_years(master_df)    
+    past_years_df = calculate_accumulated_past_years(master_df)
     master_ytd_df = calculate_year_to_date(past_years_df)
 
     return master_ytd_df
@@ -565,8 +567,9 @@ def get_opt_lists_from_df(df, cols) -> Dict:
     return opt_lists
 
 
-def slice_sales_df_by_team(sales_df: pd.DataFrame, team: str) -> pd.DataFrame:        
-    return sales_df.loc[sales_df['equipe'] == team]    
+def slice_sales_df_by_team(sales_df: pd.DataFrame, team: str) -> pd.DataFrame:
+    return sales_df.loc[sales_df['equipe'] == team]
+
 
 def slice_sales_df_by_teams(sales_df: pd.DataFrame) -> List[pd.DataFrame]:
     sales_df_list = []
@@ -574,6 +577,7 @@ def slice_sales_df_by_teams(sales_df: pd.DataFrame) -> List[pd.DataFrame]:
     for team in sales_df['equipe'].unique():
         sales_df_list.append({team: slice_sales_df_by_team(sales_df, team)})
     return sales_df_list
+
 
 def add_ytd_cols(master_df):
     for year in range(CURRENT_YEAR - 1, CURRENT_YEAR + 1):

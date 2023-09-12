@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import logging
-from flask import Flask
+
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -14,14 +14,16 @@ from dataframe import (
     add_ytd_cols,
     build_master_df,
     build_sales_orders_df,
-    slice_sales_df_by_teams,
     get_sales_lines_df,
 )
+from flask import Flask
 from flask_caching import Cache
 from kami_logging import benchmark_with, logging_with
 from layout import get_page_layout, template_dark, template_ligth
 from unidecode import unidecode
-server=Flask(__name__)
+import urllib
+
+server = Flask(__name__)
 app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = 'KAMI Sales Analytics'
 cache = Cache(
@@ -41,6 +43,7 @@ def get_sales_lines_json():
 
     return sales_lines_df.to_json(orient='split')
 
+
 def get_cached_sales_lines():
     sales_lines_json = get_sales_lines_json()
     sales_lines_df = pd.read_json(
@@ -50,6 +53,7 @@ def get_cached_sales_lines():
         map(lambda x: x.replace('timestamp_', 'dt_'), sales_lines_df.columns)
     )
     return sales_lines_df
+
 
 @cache.memoize(timeout=TIMEOUT)
 @benchmark_with(app_logger)
@@ -72,6 +76,7 @@ def get_cached_sales_orders():
         map(lambda x: x.replace('timestamp_', 'dt_'), sales_orders_df.columns)
     )
     return sales_orders_df
+
 
 @cache.memoize(timeout=TIMEOUT)
 @benchmark_with(app_logger)
@@ -173,7 +178,6 @@ def update_table(page_current, page_size, sort_by, filter):
     ].to_dict('records')
 
 
-
 @callback(
     Output('salesperson-inadimplentes', 'figure'),
     Input('select-sales-team-graph-tab', 'value'),
@@ -185,15 +189,15 @@ def update_kpi_inadimplentes(sales_team, toggle):
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
     inadimplentes = get_single_indicator(
         title='Inadimplentes',
-        value= customer_df[customer_df['dias_atraso'] > 30].count()[
+        value=customer_df[customer_df['dias_atraso'] > 30].count()[
             'cod_cliente'
-        ]        ,
+        ],
         template=template,
     )
     return inadimplentes
 
 
-#-----------------------------------------
+# -----------------------------------------
 @callback(
     Output('salesperson-churn-percent', 'figure'),
     Input('select-sales-team-graph-tab', 'value'),
@@ -205,19 +209,27 @@ def update_kpi_churn_base(sales_team, toggle):
     customer_df = master_df.loc[mask].drop_duplicates(subset=['cod_cliente'])
     churn = get_single_indicator(
         title='CHURN / BASE em %',
-        value= round(customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
-            'cod_cliente'
-        ] / (customer_df[customer_df['STATUS'] == 'ATIVO'].count()[
-            'cod_cliente'
-        ] + 
-        customer_df[customer_df['STATUS'] == 'INATIVO'].count()[
-            'cod_cliente'
-        ] + customer_df[customer_df['STATUS'] == 'PRE-INATIVO'].count()[
-            'cod_cliente'
-        ] +customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
-            'cod_cliente'
-        ]),2) * 100,
-        
+        value=round(
+            customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
+                'cod_cliente'
+            ]
+            / (
+                customer_df[customer_df['STATUS'] == 'ATIVO'].count()[
+                    'cod_cliente'
+                ]
+                + customer_df[customer_df['STATUS'] == 'INATIVO'].count()[
+                    'cod_cliente'
+                ]
+                + customer_df[customer_df['STATUS'] == 'PRE-INATIVO'].count()[
+                    'cod_cliente'
+                ]
+                + customer_df[customer_df['STATUS'] == 'PERDIDO'].count()[
+                    'cod_cliente'
+                ]
+            ),
+            2,
+        )
+        * 100,
         template=template,
     )
     return churn
@@ -337,6 +349,7 @@ def update_graph_ytd_2022(sales_team, toggle):
     ytd_2022 = get_ytd_graph(dff, 'ytd_2022', template)
     return ytd_2022
 
+
 def normalize_name(name):
     return unidecode(
         ''.join(
@@ -344,28 +357,34 @@ def normalize_name(name):
         ).lower()
     )
 
+
 @callback(
-    Output('download-master', 'data'),    
+    Output('download-master', 'href'),
     Input('select-sales-team-download', 'value'),
     Input('export-master-button', 'n_clicks'),
     prevent_initial_call=True,
 )
 def download_master_df(sales_team, n_clicks):
-    mask = get_filter_mask(master_df, 'equipe', [sales_team])
-    dff = master_df.loc[mask]
-    return dcc.send_data_frame(dff.to_excel, f'mestre_{normalize_name(sales_team)}.xlsx')
+    df = master_df
+    mask = get_filter_mask(master_df, 'equipe', [sales_team])    
+    dff = df.loc[mask]
+    csv_string = dff.to_csv(index=False, encoding='utf-8',sep=';',header=True)
+    csv_string="data:text/csv;charset=utf-8,%EF%BB%BF" + urllib.parse.quote(csv_string)
+    return csv_string
 
 
 @callback(
-    Output('download-products', 'data'),    
+    Output('download-products', 'href'),
     Input('select-sales-team-download', 'value'),
     Input('export-products-button', 'n_clicks'),
     prevent_initial_call=True,
 )
 def download_products_df(sales_team, n_clicks):
     mask = get_filter_mask(products_df, 'equipe', [sales_team])
-    dff = products_df.loc[mask]        
-    return dcc.send_data_frame(dff.to_excel, f'produtos_{normalize_name(sales_team)}.xlsx')
+    dff = products_df.loc[mask]
+    return dcc.send_data_frame(
+        dff.to_excel, f'produtos_{normalize_name(sales_team)}.xlsx'
+    )
 
 
 if __name__ == '__main__':

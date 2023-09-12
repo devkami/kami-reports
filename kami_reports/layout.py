@@ -1,8 +1,15 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from datetime import datetime
+
 import dash_bootstrap_components as dbc
-from constant import CURRENT_MONTH, CURRENT_YEAR, MONTHS_PTBR_ABBR, PAGE_SIZE, APP_VERSION
+from constant import (
+    APP_VERSION,
+    CURRENT_MONTH,
+    CURRENT_YEAR,
+    MONTHS_PTBR_ABBR,
+    PAGE_SIZE,
+)
 from dash import dash_table, dcc, html
 from dash_bootstrap_templates import ThemeSwitchAIO
 
@@ -22,9 +29,7 @@ def get_data_tab(df, cols_size, sales_teams_options):
     return (
         html.Div(
             [
-                html.Label(
-                    'Equipe de Vendas', style={'font-size': '100%'}
-                ),
+                html.Label('Equipe de Vendas', style={'font-size': '100%'}),
                 dcc.Dropdown(
                     options=(sales_teams_options),
                     value=sales_teams_options[-1],
@@ -113,7 +118,6 @@ def get_graph_tab(sales_teams_options):
                                                 [
                                                     dbc.Row(
                                                         [
-
                                                             dbc.Col(
                                                                 [
                                                                     dcc.Graph(
@@ -126,7 +130,6 @@ def get_graph_tab(sales_teams_options):
                                                                 sm=12,
                                                                 md=3,
                                                             ),
-                                                            
                                                             dbc.Col(
                                                                 [
                                                                     dcc.Graph(
@@ -139,7 +142,6 @@ def get_graph_tab(sales_teams_options):
                                                                 sm=12,
                                                                 md=3,
                                                             ),
-
                                                             dbc.Col(
                                                                 [
                                                                     dcc.Graph(
@@ -319,7 +321,9 @@ def get_sales_dashboard(df):
                             ),
                             dcc.Tab(
                                 label='Dados',
-                                children=get_data_tab(df, get_cols_size(df), sales_teams_options),
+                                children=get_data_tab(
+                                    df, get_cols_size(df), sales_teams_options
+                                ),
                             ),
                         ],
                         className='dbc',
@@ -463,7 +467,7 @@ footer_row = html.Footer(
                                     [
                                         html.P(
                                             [
-                                                f"version: {APP_VERSION} - ",
+                                                f'version: {APP_VERSION} - ',
                                                 f'@ {datetime.now().year} Copyright: ',
                                                 html.A(
                                                     'KAMI CO.',
