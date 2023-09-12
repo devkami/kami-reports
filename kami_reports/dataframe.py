@@ -4,11 +4,25 @@ from datetime import timedelta as td
 from typing import Dict, List
 
 import pandas as pd
-from constant import (
-    COLUMNS_NAMES_HEAD,
+from dotenv import load_dotenv
+from kami_logging import benchmark_with, logging_with
+from kami_uno_database import (
+    get_qy_default_seller,
+    get_qy_participant_seller,
+    get_qy_sales_teams,
+    get_qy_sellers_contact,
+    get_vw_board_billings,
+    get_vw_customer_details,
+    get_vw_future_bills,
+    get_vw_sales_lines,
+)
+from numpy import dtype
+
+from kami_reports.constant import (
     COMPANIES,
     CURRENT_MONTH,
     CURRENT_YEAR,
+    MASTER_COLUMNS_HEAD,
     MONTHS_PTBR,
     MONTHS_PTBR_ABBR,
     SALE_NOPS,
@@ -20,21 +34,10 @@ from constant import (
     TEMPLATE_COLS,
     TROUSSEAU_NOPS,
 )
-from kami_uno_database import (
-    get_qy_contact_sellers,
-    get_qy_default_seller,
-    get_qy_participant_seller,
-    get_qy_sales_teams,
-    get_vw_board_billings,
-    get_vw_customer_details,
-    get_vw_future_bills,
-    get_vw_sales_lines
-)
-from kami_logging import benchmark_with, logging_with
-from numpy import dtype
-from dotenv import load_dotenv
+
 load_dotenv()
 dataframe_logger = logging.getLogger('dataframe')
+
 
 @benchmark_with(dataframe_logger)
 @logging_with(dataframe_logger)
@@ -199,7 +202,7 @@ def calculate_master_df(sales_orders_df: pd.DataFrame) -> pd.DataFrame:
     customer_details_df = get_customer_details_df()
     head_df = sales_orders_df.merge(
         customer_details_df, on='cod_cliente', how='outer'
-    )[COLUMNS_NAMES_HEAD]
+    )[MASTER_COLUMNS_HEAD]
     head_df['cep'] = clean_strtoint_col(head_df, 'cep')
     trousseau_df = sum_trousseau_by_costumer(sales_orders_df)
     subsidized_df = sum_subsidized_by_costumer(sales_orders_df)
@@ -593,7 +596,7 @@ def add_ytd_cols(master_df):
 def get_sellers_details() -> pd.DataFrame:
     sellers_details_df = pd.DataFrame()
     try:
-        sellers_details_df = get_qy_contact_sellers()[['id', 'name']].rename(
+        sellers_details_df = get_qy_sellers_contact()[['id', 'name']].rename(
             columns={'id': 'cod_colaborador', 'name': 'nome_colaborador'}
         )
         sellers_customers_df = pd.concat(

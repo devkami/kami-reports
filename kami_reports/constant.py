@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
+import os
 from datetime import datetime, timedelta
 
 import numpy as np
 
-APP_VERSION = '0.3.3'
+SOURCE_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.abspath(SOURCE_DIR + '/../')
+APP_VERSION = '0.3.4'
 TIMEOUT = 3600
 PAGE_SIZE = 100
 OPERATORS = [
@@ -16,7 +19,22 @@ OPERATORS = [
     ['contains '],
     ['datestartswith '],
 ]
-
+WEEKDAYS_PTBR_ABBR = {
+    0: 'SEG',
+    1: 'TER',
+    2: 'QUA',
+    3: 'QUI',
+    4: 'SEX',
+    5: 'SAB',
+    6: 'DOM',
+}
+CURRENT_WEEKDAY = datetime.today().weekday()
+CURRENT_DAY = datetime.now().day
+CURRENT_DAY_FOLDER = f'{CURRENT_DAY}-{WEEKDAYS_PTBR_ABBR[CURRENT_WEEKDAY]}'
+WEEK_YEAR_NUMBER = datetime.now().strftime('%V')
+END_WEEK = datetime.now() - timedelta(days=datetime.today().weekday())
+START_WEEK = END_WEEK - timedelta(days=7)
+CURRENT_WEEK_FOLDER = f'Semana-{WEEK_YEAR_NUMBER} ({START_WEEK.day}-{START_WEEK.month} a {END_WEEK.day}-{END_WEEK.month})'
 MONTHS_PTBR = {
     1: 'Janeiro',
     2: 'Fevereiro',
@@ -45,28 +63,12 @@ MONTHS_PTBR_ABBR = {
     11: 'NOV',
     12: 'DEZ',
 }
-WEEKDAYS_PTBR_ABBR = {
-    0: 'SEG',
-    1: 'TER',
-    2: 'QUA',
-    3: 'QUI',
-    4: 'SEX',
-    5: 'SAB',
-    6: 'DOM',
-}
+
 TAGS = ['_liquido', '_bruto', '_desconto', '_bonificado', '_enxoval']
 STARTING_YEAR = 2022
 CURRENT_MONTH = datetime.now().month
 CURRENT_YEAR = datetime.now().year
-CURRENT_DAY = datetime.now().day
-END_WEEK = datetime.now() - timedelta(days=datetime.today().weekday())
-START_WEEK = END_WEEK - timedelta(days=7)
-CURRENT_WEEKDAY = datetime.today().weekday()
-WEEK_YEAR_NUMBER = datetime.now().strftime('%V')
-CURRENT_WEEK_FOLDER = f'Semana-{WEEK_YEAR_NUMBER} ({START_WEEK.day}-{START_WEEK.month} a {END_WEEK.day}-{END_WEEK.month})'
-CURRENT_DAY_FOLDER = f'{CURRENT_DAY}-{WEEKDAYS_PTBR_ABBR[CURRENT_WEEKDAY]}'
-COMERCIAL_WEEK = [0, 1, 2, 3, 4]
-COLUMNS_NAMES_HEAD = [
+MASTER_COLUMNS_HEAD = [
     'cod_cliente',
     'nome_cliente',
     'razao_social',
@@ -281,31 +283,6 @@ SALES_ORDERS_GROUP_COLUMNS = [
     'cod_grupo_pai',
     'desc_grupo_pai',
     'cod_marca',
-    'desc_marca',    
+    'desc_marca',
 ]
 SALES_ORDERS_SUM_COLUMNS = ['desconto_pedido', 'valor_nota', 'total_bruto']
-SALES_BILLINGS_NUM_COLS = {
-    'ano': np.int64,
-    'mes': np.int64,
-    'empresa_pedido': np.int64,
-    'empresa_nota_fiscal': np.int64,
-    'cod_cliente': np.int64,
-    'cod_colaborador': np.int64,
-    'cod_pedido': np.int64,
-    'cod_situacao': np.int64,
-    'cod_grupo_produto': np.int64,
-    'cod_grupo_pai': np.int64,
-    'cod_marca': np.int64,
-    'custo_total': np.float64,
-    'custo_kami': np.float64,
-    'qtd': np.int64,
-    'preco_unit_original': np.float64,
-    'preco_total_original': np.float64,
-    'margem_bruta': np.float64,
-    'preco_total': np.float64,
-    'preco_desconto_rateado': np.float64,
-    'vl_total_pedido': np.float64,
-    'desconto_pedido': np.float64,
-    'valor_nota': np.float64,
-    'total_bruto': np.float64,
-}

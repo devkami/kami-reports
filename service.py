@@ -11,7 +11,7 @@ def main():
         try:
             now = datetime.datetime.now()
 
-            if now.weekday() < 5 and now.hour == 21:
+            if now.weekday() < 5 and now.hour == 6:
                 deliver_reports()
 
             time.sleep(3600)
