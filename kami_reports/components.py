@@ -11,7 +11,7 @@ app_logger = logging.getLogger('kami-dash')
 ## Filters
 
 
-def multi_select(id, df, filter_dict):
+def dropdown_select(id, df, filter_dict, multi=True):
     return html.Div(
         [
             html.Label(filter_dict['name'], style={'font-size': '100%'}),
@@ -20,7 +20,7 @@ def multi_select(id, df, filter_dict):
                 value=df[filter_dict['values']].unique()[:-1],
                 id=f'select-{id}',
                 className='dbc',
-                multi=True,
+                multi=multi,
             ),
         ],
         className='my-2',
@@ -28,7 +28,7 @@ def multi_select(id, df, filter_dict):
 
 
 def multi_selects_from_df(df, filters_list):
-    return [multi_select(df, filter_dict) for filter_dict in filters_list]
+    return [dropdown_select(df, filter_dict) for filter_dict in filters_list]
 
 
 def get_filter_mask(df, col, selected_itens):

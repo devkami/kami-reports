@@ -18,6 +18,7 @@ url_theme2 = dbc.themes.SLATE
 
 # Layout ->
 def get_data_tab(df, cols_size, sales_teams_options):
+    sales_teams_options = list(sales_teams_options) + ['Todas']
     return (
         html.Div(
             [
@@ -27,9 +28,9 @@ def get_data_tab(df, cols_size, sales_teams_options):
                 dcc.Dropdown(
                     options=(sales_teams_options),
                     value=sales_teams_options[-1],
-                    id='select-sales-team',
+                    id='select-sales-team-download',
                     className='dbc',
-                    multi=True,
+                    multi=False,
                 ),
                 dbc.Button(
                     'Exportar Mestre',
@@ -91,7 +92,7 @@ def get_graph_tab(sales_teams_options):
                             dcc.Dropdown(
                                 options=(sales_teams_options),
                                 value=sales_teams_options[-1],
-                                id='select-sales-team',
+                                id='select-sales-team-graph-tab',
                                 className='dbc',
                                 multi=True,
                             ),

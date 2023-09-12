@@ -15,12 +15,12 @@ from dataframe import (
     build_master_df,
     build_sales_orders_df,
     slice_sales_df_by_teams,
-    get_sales_bi_df,
     get_sales_lines_df,
 )
 from flask_caching import Cache
 from kami_logging import benchmark_with, logging_with
 from layout import get_page_layout, template_dark, template_ligth
+from unidecode import unidecode
 server=Flask(__name__)
 app = dash.Dash(server=server, external_stylesheets=[dbc.themes.BOOTSTRAP])
 app.title = 'KAMI Sales Analytics'
@@ -41,17 +41,6 @@ def get_sales_lines_json():
 
     return sales_lines_df.to_json(orient='split')
 
-@cache.memoize(timeout=TIMEOUT)
-@benchmark_with(app_logger)
-@logging_with(app_logger)
-def get_sales_orders_json():
-    sales_orders_df = build_sales_orders_df(get_sales_lines_df())
-    sales_orders_df.columns = list(
-        map(lambda x: x.replace('dt_', 'timestamp_'), sales_orders_df.columns)
-    )
-
-    return sales_orders_df.to_json(orient='split')
-
 def get_cached_sales_lines():
     sales_lines_json = get_sales_lines_json()
     sales_lines_df = pd.read_json(
@@ -61,6 +50,18 @@ def get_cached_sales_lines():
         map(lambda x: x.replace('timestamp_', 'dt_'), sales_lines_df.columns)
     )
     return sales_lines_df
+
+@cache.memoize(timeout=TIMEOUT)
+@benchmark_with(app_logger)
+@logging_with(app_logger)
+def get_sales_orders_json():
+    sales_orders_df = build_sales_orders_df(get_cached_sales_lines())
+    sales_orders_df.columns = list(
+        map(lambda x: x.replace('dt_', 'timestamp_'), sales_orders_df.columns)
+    )
+
+    return sales_orders_df.to_json(orient='split')
+
 
 def get_cached_sales_orders():
     sales_orders_json = get_sales_orders_json()
@@ -75,8 +76,8 @@ def get_cached_sales_orders():
 @cache.memoize(timeout=TIMEOUT)
 @benchmark_with(app_logger)
 @logging_with(app_logger)
-def get_master_df_json(sales_orders_df):
-    master_df = build_master_df(sales_orders_df)
+def get_master_df_json():
+    master_df = build_master_df(get_cached_sales_orders())
     master_df.columns = list(
         map(lambda x: x.replace('dt_', 'timestamp_'), master_df.columns)
     )
@@ -84,7 +85,7 @@ def get_master_df_json(sales_orders_df):
 
 
 def get_cached_master_df():
-    master_df_json = get_master_df_json(get_cached_sales_orders())
+    master_df_json = get_master_df_json()
     master_df = pd.read_json(
         master_df_json, orient='split', convert_dates=True
     )
@@ -97,11 +98,10 @@ def get_cached_master_df():
 
 products_df = get_cached_sales_lines()
 master_df = get_cached_master_df()
-app_logger.exception(master_df.columns)
-layout = get_page_layout(master_df)
+
 
 app.layout = dbc.Container(
-    layout,
+    get_page_layout(master_df),
     fluid=True,
     style={'height': '100vh'},
 )
@@ -176,7 +176,7 @@ def update_table(page_current, page_size, sort_by, filter):
 
 @callback(
     Output('salesperson-inadimplentes', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_inadimplentes(sales_team, toggle):
@@ -196,7 +196,7 @@ def update_kpi_inadimplentes(sales_team, toggle):
 #-----------------------------------------
 @callback(
     Output('salesperson-churn-percent', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_churn_base(sales_team, toggle):
@@ -225,7 +225,7 @@ def update_kpi_churn_base(sales_team, toggle):
 
 @callback(
     Output('salesperson-kpi-ativo', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_active(sales_team, toggle):
@@ -244,7 +244,7 @@ def update_kpi_active(sales_team, toggle):
 
 @callback(
     Output('salesperson-kpi-pre_inativo', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_pre_inactive(sales_team, toggle):
@@ -263,7 +263,7 @@ def update_kpi_pre_inactive(sales_team, toggle):
 
 @callback(
     Output('salesperson-kpi-inativo', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_inctive(sales_team, toggle):
@@ -282,7 +282,7 @@ def update_kpi_inctive(sales_team, toggle):
 
 @callback(
     Output('salesperson-kpi-perdido', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_kpi_lost(sales_team, toggle):
@@ -301,7 +301,7 @@ def update_kpi_lost(sales_team, toggle):
 
 @callback(
     Output('salesperson-graph-ytd', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_graph_ytd(sales_team, toggle):
@@ -314,7 +314,7 @@ def update_graph_ytd(sales_team, toggle):
 
 @callback(
     Output('salesperson-graph-ytd-2023', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_graph_ytd_2023(sales_team, toggle):
@@ -327,7 +327,7 @@ def update_graph_ytd_2023(sales_team, toggle):
 
 @callback(
     Output('salesperson-graph-ytd-2022', 'figure'),
-    Input('select-sales-team', 'value'),
+    Input('select-sales-team-graph-tab', 'value'),
     Input(ThemeSwitchAIO.ids.switch('theme'), 'value'),
 )
 def update_graph_ytd_2022(sales_team, toggle):
@@ -337,38 +337,35 @@ def update_graph_ytd_2022(sales_team, toggle):
     ytd_2022 = get_ytd_graph(dff, 'ytd_2022', template)
     return ytd_2022
 
+def normalize_name(name):
+    return unidecode(
+        ''.join(
+            ch for ch in name.replace(' ', '_') if ch.isalpha() or ch == '_'
+        ).lower()
+    )
 
 @callback(
-    Output('download-master', 'data'),
+    Output('download-master', 'data'),    
+    Input('select-sales-team-download', 'value'),
     Input('export-master-button', 'n_clicks'),
-    Input('select-sales-team-download', 'value'),
     prevent_initial_call=True,
 )
-def download_master_df(sales_teams, n_clicks):
-    master_teams_list = []
-    master_teams_dfs = slice_sales_df_by_teams(master_df, sales_teams)
-    for master_team_dict in master_teams_dfs:
-        for team_name, master_team_df in master_team_dict.items():
-            master_teams_list.append(master_team_df)
-    master_df = pd.concat(master_teams_list, ignore_index=False, axis=1)
-    return dcc.send_data_frame(master_df.to_excel, 'mestre.xlsx')
+def download_master_df(sales_team, n_clicks):
+    mask = get_filter_mask(master_df, 'equipe', [sales_team])
+    dff = master_df.loc[mask]
+    return dcc.send_data_frame(dff.to_excel, f'mestre_{normalize_name(sales_team)}.xlsx')
 
 
 @callback(
-    Output('download-products', 'data'),
-    Input('export-products-button', 'n_clicks'),
+    Output('download-products', 'data'),    
     Input('select-sales-team-download', 'value'),
+    Input('export-products-button', 'n_clicks'),
     prevent_initial_call=True,
 )
-def download_products_df(sales_teams, n_clicks):
-    products_teams_list = []
-    products_teams_dfs = slice_sales_df_by_teams(products_df, sales_teams)
-    for products_team_dict in products_teams_dfs:
-        for team_name, products_team_df in products_team_dict.items():
-            products_teams_list.append(products_team_df)
-    products_df = pd.concat(products_teams_list, ignore_index=False, axis=1)
-    
-    return dcc.send_data_frame(products_df.to_excel, 'produtos.xlsx')
+def download_products_df(sales_team, n_clicks):
+    mask = get_filter_mask(products_df, 'equipe', [sales_team])
+    dff = products_df.loc[mask]        
+    return dcc.send_data_frame(dff.to_excel, f'produtos_{normalize_name(sales_team)}.xlsx')
 
 
 if __name__ == '__main__':

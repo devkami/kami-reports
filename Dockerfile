@@ -1,12 +1,13 @@
 FROM python:3.11-slim-buster
+FROM python:3.10
+ENV TZ="America/Sao_Paulo"
 RUN apt-get update
 RUN apt-get install nano
-
-RUN mkdir wd
-WORKDIR wd
-COPY kami_reports/requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install poetry
+WORKDIR /app
+COPY . /app
+RUN poetry install
  
 COPY kami_reports/ ./
  
-CMD [ "gunicorn", "--workers=5", "--threads=1", "--preload", "-b 0.0.0.0:8090", "app:server"]
+CMD ["poetry", "run", "gunicorn", "--workers=5", "--threads=1", "--preload", "-b 0.0.0.0:8090", "app:server"]
