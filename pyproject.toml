@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "kami_reports"}]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.10"
 python-dotenv = "^1.0.0"
 kami-logging = "^0.2.1"
 kami-messenger = "^0.2.0"
@@ -27,6 +27,11 @@ numerize = "^0.12"
 flask-caching = "^2.0.2"
 unidecode = "^1.3.6"
 gunicorn = "^20.1.0"
+kami-filemanager = "^0.1.0"
+kami-uno-database = "^0.1.6"
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.25.2"
 
 [build-system]
 requires = ["poetry-core"]

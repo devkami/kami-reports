@@ -17,10 +17,20 @@ url_theme1 = dbc.themes.SPACELAB
 url_theme2 = dbc.themes.SLATE
 
 # Layout ->
-def get_data_tab(df, cols_size):
+def get_data_tab(df, cols_size, sales_teams_options):
     return (
         html.Div(
             [
+                html.Label(
+                    'Equipe de Vendas', style={'font-size': '100%'}
+                ),
+                dcc.Dropdown(
+                    options=(sales_teams_options),
+                    value=sales_teams_options[-1],
+                    id='select-sales-team',
+                    className='dbc',
+                    multi=True,
+                ),
                 dbc.Button(
                     'Exportar Mestre',
                     color='primary',
@@ -293,6 +303,7 @@ def get_cols_size(customer_df):
 
 
 def get_sales_dashboard(df):
+    sales_teams_options = df['equipe'].unique()
     return html.Div(
         id='maindiv',
         children=[
@@ -303,11 +314,11 @@ def get_sales_dashboard(df):
                         children=[
                             dcc.Tab(
                                 label='Métricas',
-                                children=get_graph_tab(df['equipe'].unique()),
+                                children=get_graph_tab(sales_teams_options),
                             ),
                             dcc.Tab(
                                 label='Dados',
-                                children=get_data_tab(df, get_cols_size(df)),
+                                children=get_data_tab(df, get_cols_size(df), sales_teams_options),
                             ),
                         ],
                         className='dbc',

@@ -49,9 +49,7 @@ TAGS = ['_liquido', '_bruto', '_desconto', '_bonificado', '_enxoval']
 STARTING_YEAR = 2022
 CURRENT_MONTH = datetime.now().month
 CURRENT_YEAR = datetime.now().year
-COLUMNS_NAMES_HEAD = [
-    'cod_colaborador',
-    'nome_colaborador',
+MASTER_COLUMNS_HEAD = [
     'cod_cliente',
     'nome_cliente',
     'razao_social',
@@ -70,7 +68,6 @@ COLUMNS_NAMES_HEAD = [
     'cod_marca',
     'desc_marca',
     'STATUS',
-    'equipe',
 ]
 SALE_NOPS = [
     '6.102',
@@ -224,3 +221,26 @@ ODERS_COLS_HEAD = [
     'dt_entrega_comprometida',
     'dt_faturamento',
 ]
+SALES_ORDERS_GROUP_COLUMNS = [
+    'ano',
+    'mes',
+    'empresa_pedido',
+    'empresa_nota_fiscal',
+    'cod_cliente',
+    'cod_pedido',
+    'nr_ped_compra_cli',
+    'cod_situacao',
+    'desc_situacao',
+    'nop',
+    'cfop',
+    'cod_cond_pagto',
+    'cod_forma_pagto',
+    'forma_pagto',
+    'cod_grupo_produto',
+    'desc_grupo_produto',
+    'cod_grupo_pai',
+    'desc_grupo_pai',
+    'cod_marca',
+    'desc_marca',    
+]
+SALES_ORDERS_SUM_COLUMNS = ['desconto_pedido', 'valor_nota', 'total_bruto']

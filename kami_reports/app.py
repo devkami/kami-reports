@@ -13,6 +13,8 @@ from dash_bootstrap_templates import ThemeSwitchAIO
 from dataframe import (
     add_ytd_cols,
     build_master_df,
+    build_sales_orders_df,
+    slice_sales_df_by_teams,
     get_sales_bi_df,
     get_sales_lines_df,
 )
@@ -31,31 +33,50 @@ app_logger = logging.getLogger('kami-dash')
 @cache.memoize(timeout=TIMEOUT)
 @benchmark_with(app_logger)
 @logging_with(app_logger)
-def get_sales_bi_json():
-    sales_bi_df = get_sales_bi_df(get_sales_lines_df())
-    sales_bi_df.columns = list(
-        map(lambda x: x.replace('dt_', 'timestamp_'), sales_bi_df.columns)
+def get_sales_lines_json():
+    sales_lines_df = get_sales_lines_df()
+    sales_lines_df.columns = list(
+        map(lambda x: x.replace('dt_', 'timestamp_'), sales_lines_df.columns)
     )
 
-    return sales_bi_df.to_json(orient='split')
-
-
-def get_cached_sales_bi():
-    sales_bi_json = get_sales_bi_json()
-    sales_bi_df = pd.read_json(
-        sales_bi_json, orient='split', convert_dates=True
-    )
-    sales_bi_df.columns = list(
-        map(lambda x: x.replace('timestamp_', 'dt_'), sales_bi_df.columns)
-    )
-    return sales_bi_df
-
+    return sales_lines_df.to_json(orient='split')
 
 @cache.memoize(timeout=TIMEOUT)
 @benchmark_with(app_logger)
 @logging_with(app_logger)
-def get_master_df_json(sales_bi_df):
-    master_df = build_master_df(sales_bi_df)
+def get_sales_orders_json():
+    sales_orders_df = build_sales_orders_df(get_sales_lines_df())
+    sales_orders_df.columns = list(
+        map(lambda x: x.replace('dt_', 'timestamp_'), sales_orders_df.columns)
+    )
+
+    return sales_orders_df.to_json(orient='split')
+
+def get_cached_sales_lines():
+    sales_lines_json = get_sales_lines_json()
+    sales_lines_df = pd.read_json(
+        sales_lines_json, orient='split', convert_dates=True
+    )
+    sales_lines_df.columns = list(
+        map(lambda x: x.replace('timestamp_', 'dt_'), sales_lines_df.columns)
+    )
+    return sales_lines_df
+
+def get_cached_sales_orders():
+    sales_orders_json = get_sales_orders_json()
+    sales_orders_df = pd.read_json(
+        sales_orders_json, orient='split', convert_dates=True
+    )
+    sales_orders_df.columns = list(
+        map(lambda x: x.replace('timestamp_', 'dt_'), sales_orders_df.columns)
+    )
+    return sales_orders_df
+
+@cache.memoize(timeout=TIMEOUT)
+@benchmark_with(app_logger)
+@logging_with(app_logger)
+def get_master_df_json(sales_orders_df):
+    master_df = build_master_df(sales_orders_df)
     master_df.columns = list(
         map(lambda x: x.replace('dt_', 'timestamp_'), master_df.columns)
     )
@@ -63,7 +84,7 @@ def get_master_df_json(sales_bi_df):
 
 
 def get_cached_master_df():
-    master_df_json = get_master_df_json(get_cached_sales_bi())
+    master_df_json = get_master_df_json(get_cached_sales_orders())
     master_df = pd.read_json(
         master_df_json, orient='split', convert_dates=True
     )
@@ -74,9 +95,9 @@ def get_cached_master_df():
     return master_df
 
 
-sales_bi_df = get_cached_sales_bi()
+products_df = get_cached_sales_lines()
 master_df = get_cached_master_df()
-
+app_logger.exception(master_df.columns)
 layout = get_page_layout(master_df)
 
 app.layout = dbc.Container(
@@ -320,19 +341,34 @@ def update_graph_ytd_2022(sales_team, toggle):
 @callback(
     Output('download-master', 'data'),
     Input('export-master-button', 'n_clicks'),
+    Input('select-sales-team-download', 'value'),
     prevent_initial_call=True,
 )
-def download_master_df(n_clicks):
-    return dcc.send_data_frame(master_df.to_excel, 'mestre_geral.xlsx')
+def download_master_df(sales_teams, n_clicks):
+    master_teams_list = []
+    master_teams_dfs = slice_sales_df_by_teams(master_df, sales_teams)
+    for master_team_dict in master_teams_dfs:
+        for team_name, master_team_df in master_team_dict.items():
+            master_teams_list.append(master_team_df)
+    master_df = pd.concat(master_teams_list, ignore_index=False, axis=1)
+    return dcc.send_data_frame(master_df.to_excel, 'mestre.xlsx')
 
 
 @callback(
     Output('download-products', 'data'),
     Input('export-products-button', 'n_clicks'),
+    Input('select-sales-team-download', 'value'),
     prevent_initial_call=True,
 )
-def download_products_df(n_clicks):
-    return dcc.send_data_frame(sales_bi_df.to_excel, 'produtos_geral.xlsx')
+def download_products_df(sales_teams, n_clicks):
+    products_teams_list = []
+    products_teams_dfs = slice_sales_df_by_teams(products_df, sales_teams)
+    for products_team_dict in products_teams_dfs:
+        for team_name, products_team_df in products_team_dict.items():
+            products_teams_list.append(products_team_df)
+    products_df = pd.concat(products_teams_list, ignore_index=False, axis=1)
+    
+    return dcc.send_data_frame(products_df.to_excel, 'produtos.xlsx')
 
 
 if __name__ == '__main__':
