@@ -161,24 +161,20 @@ def calculate_overdue_kpi(customer_df):
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_master_report(master_df, zip=True, format='xlsx'):
-    return generate_report(df=master_df, type='mestre', zip=zip, format=format)
+def generate_master_report(master_df, format='xlsx'):
+    return generate_report(df=master_df, type='mestre', format=format)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_board_report(board_df, zip=False, format='xlsx'):
-    return generate_report(
-        df=board_df, type='faturamento', zip=zip, format=format
-    )
+def generate_board_report(board_df, format='xlsx'):
+    return generate_report(df=board_df, type='faturamento', format=format)
 
 
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
-def generate_products_report(products_df, zip=True, format='xlsx'):
-    return generate_report(
-        df=products_df, type='produtos', zip=zip, format=format
-    )
+def generate_products_report(products_df, format='xlsx'):
+    return generate_report(df=products_df, type='produtos', format=format)
 
 
 def normalize_name(name):
@@ -221,6 +217,7 @@ def generate_products_reports_by_team(team_products_dfs):
 @logging_with(report_bot_logger)
 def deliver_products_reports(products_df, current_folders_id):
     delete_files_from(path.join(SOURCE_DIR, f'data/out'))
+    generate_report(df=products_df, type='produtos')
     team_products_dfs = slice_sales_df_by_team(products_df)
     generate_products_reports_by_team(team_products_dfs)
     upload_files_to(
@@ -246,6 +243,7 @@ def generate_master_reports_by_team(team_sales_master_dfs):
 def deliver_master_reports(master_df, current_folders_id):
     delete_files_from(path.join(SOURCE_DIR, f'data/out'))
     master_df = master_df.drop_duplicates(keep='first')
+    generate_report(df=master_df, type='mestre')
     team_master_dfs = slice_sales_df_by_team(master_df)
     generate_master_report(master_df)
     generate_master_reports_by_team(team_master_dfs)
@@ -315,7 +313,6 @@ def deliver_board_reports(current_folders_id, contacts):
         source=path.join(SOURCE_DIR, f'data/out'),
         destiny=current_folders_id['comercial'],
     )
-    delete_files_from('data/out ')
     delete_files_from(path.join(SOURCE_DIR, f'data/out'))
     send_message_by_group(
         template_name='board',
@@ -344,8 +341,12 @@ def deliver_reports():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    delete_files_from(source=path.join(SOURCE_DIR, f'data/out'))
-    deliver_reports()
+    report_bot_logger.info('Start Execution.')
+    current_folders_id = create_gdrive_folders()
+    upload_files_to(
+        source=path.join(SOURCE_DIR, f'data/out'),
+        destiny=current_folders_id['account'],
+    )
 
 
 @benchmark_with(report_bot_logger)
@@ -355,5 +356,4 @@ def main():
 
 
 if __name__ == '__main__':
-    df = get_board_billings_df()
-    print(df)
+    main()

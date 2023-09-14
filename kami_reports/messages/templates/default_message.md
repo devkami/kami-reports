@@ -1,4 +1,4 @@
-{% block subject %}{% endblock %}
+{% block subject %}KAMI Report Bot | {{ subject }}{% endblock %}
 
 {% block contact_name %}Olá, {{ contact_name }} {% endblock %}
 
