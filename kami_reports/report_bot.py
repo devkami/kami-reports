@@ -19,7 +19,6 @@ from kami_reports.constant import (
     CURRENT_MONTH,
     CURRENT_WEEK_FOLDER,
     CURRENT_YEAR,
-    ROOT_DIR,
     SOURCE_DIR,
 )
 from kami_reports.dataframe import (
@@ -294,7 +293,7 @@ def deliver_account_reports(current_folders_id, contacts):
     delete_files_from(path.join(SOURCE_DIR, f'data/out'))
     send_message_by_group(
         template_name='account',
-        group='test',
+        group='account',
         message_dict={
             'subject': 'Relatórios Financeiros Diários',
             'gdrive_folder_id': current_folders_id['account'],
@@ -343,9 +342,17 @@ def deliver_reports():
 def test():
     report_bot_logger.info('Start Execution.')
     current_folders_id = create_gdrive_folders()
-    upload_files_to(
-        source=path.join(SOURCE_DIR, f'data/out'),
-        destiny=current_folders_id['account'],
+    contacts = get_contacts_from_json(
+        path.join(SOURCE_DIR, 'messages/contacts.json')
+    )
+    send_message_by_group(
+        template_name='account',
+        group='test',
+        message_dict={
+            'subject': 'Relatórios Financeiros Diários',
+            'gdrive_folder_id': current_folders_id['account'],
+        },
+        contacts=contacts,
     )
 
 
@@ -356,4 +363,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    test()

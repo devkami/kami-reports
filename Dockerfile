@@ -1,8 +1,10 @@
-FROM python:3.10
+FROM python:3.10-slim
 ENV TZ="America/Sao_Paulo"
-RUN pip install poetry
 
 WORKDIR /app
-COPY . /app
-RUN poetry install
+COPY pyproject.toml service.py README.md /app/
+COPY kami_reports /app/kami_reports/
+RUN pip install poetry && \
+    poetry install --no-dev
+
 CMD ["poetry", "run", "python", "service.py"]
