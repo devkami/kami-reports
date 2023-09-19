@@ -1,6 +1,12 @@
 version: '3.9'
 services:
-  kami-reports:
-    build:
-      context: .
+  reports:
+    build: 
+      context: ./
+    image: kami-reports:0.5.3
+    container_name : "kami-reports"
+    hostname: "kami-reports"
+    volumes:
+      - ./logs:/app/logs
+      - ./credentials:/app/credentials
     restart: always

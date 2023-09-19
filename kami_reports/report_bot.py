@@ -19,6 +19,7 @@ from kami_reports.constant import (
     CURRENT_MONTH,
     CURRENT_WEEK_FOLDER,
     CURRENT_YEAR,
+    ROOT_DIR,
     SOURCE_DIR,
 )
 from kami_reports.dataframe import (
@@ -30,10 +31,7 @@ from kami_reports.dataframe import (
     get_sales_lines_df,
     slice_sales_df_by_team,
 )
-from kami_reports.messages.messages import (
-    get_contacts_from_json,
-    send_message_by_group,
-)
+from kami_reports.messages import get_contacts_from_json, send_message_by_group
 
 report_bot_logger = logging.getLogger('report_bot')
 report_bot_logger.info('Loading Enviroment Variables')
@@ -263,7 +261,7 @@ def deliver_comercial_reports(current_folders_id, contacts):
     deliver_master_reports(master_df, current_folders_id)
     send_message_by_group(
         template_name='comercial',
-        group='test',
+        group='comercial',
         message_dict={
             'subject': 'Faturamento Geral Diário',
             'gdrive_folder_id': current_folders_id['comercial'],
@@ -315,7 +313,7 @@ def deliver_board_reports(current_folders_id, contacts):
     delete_files_from(path.join(SOURCE_DIR, f'data/out'))
     send_message_by_group(
         template_name='board',
-        group='test',
+        group='board',
         message_dict={
             'subject': 'Faturamento Geral Diário',
             'gdrive_folder_id': current_folders_id['comercial'],
@@ -330,7 +328,7 @@ def deliver_reports():
     report_bot_logger.info('Start Execution.')
     current_folders_id = create_gdrive_folders()
     contacts = get_contacts_from_json(
-        path.join(SOURCE_DIR, 'messages/contacts.json')
+        path.join(ROOT_DIR, 'messages/contacts.json')
     )
     deliver_account_reports(current_folders_id, contacts)
     deliver_comercial_reports(current_folders_id, contacts)
@@ -340,20 +338,7 @@ def deliver_reports():
 @benchmark_with(report_bot_logger)
 @logging_with(report_bot_logger)
 def test():
-    report_bot_logger.info('Start Execution.')
-    current_folders_id = create_gdrive_folders()
-    contacts = get_contacts_from_json(
-        path.join(SOURCE_DIR, 'messages/contacts.json')
-    )
-    send_message_by_group(
-        template_name='account',
-        group='test',
-        message_dict={
-            'subject': 'Relatórios Financeiros Diários',
-            'gdrive_folder_id': current_folders_id['account'],
-        },
-        contacts=contacts,
-    )
+    ...
 
 
 @benchmark_with(report_bot_logger)
