@@ -232,5 +232,11 @@
         "phone": "+5521993308393",
         "email": "mauricio@gruposuprir.com",
         "groups": ["comercial", "geral", "board"]
-    }
+    },
+    {
+      "name": "Cláudio Almeida",
+      "phone": "+5511999180770",
+      "email": "claudio.almeida@kamico.com.br",
+      "groups": ["account", "geral"]
+  }
 ]
